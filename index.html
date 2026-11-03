@@ -1,3 +1,613 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>DEMꓳN SLꓥYER | XTREINO</title><style>
-:root{color-scheme:dark;font-family:Inter,system-ui,Arial,sans-serif;background:#090910;color:#f5f4ff}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top right,#392056 0,#090910 48%);min-height:100vh}header{padding:22px max(22px,calc((100vw - 1060px)/2));border-bottom:1px solid #393046;display:flex;justify-content:space-between;align-items:center;gap:12px}h1{font-size:clamp(23px,4vw,38px);margin:0;letter-spacing:1px}h2{font-size:23px;margin:0 0 12px}p{color:#bbb3cb;line-height:1.6}.accent{color:#b58aff}.tag{font-size:12px;letter-spacing:3px;color:#c5a5ff;font-weight:800}main{max-width:1060px;margin:auto;padding:40px 22px}.hero{padding:32px 0 24px}.hero p{max-width:660px}.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:20px}.panel{background:#151320;border:1px solid #393047;border-radius:18px;padding:24px;box-shadow:0 15px 40px #0003}label{display:block;font-size:13px;color:#ded5ee;margin:13px 0 6px}input,textarea,select{width:100%;background:#0d0c15;border:1px solid #51445f;color:white;border-radius:9px;padding:12px;font:inherit}input:focus,textarea:focus,select:focus{outline:2px solid #9c6de5}button{border:0;border-radius:9px;background:#9863e8;color:white;font-weight:750;padding:12px 18px;cursor:pointer}button:hover{background:#ac83ed}button.secondary{background:#30253e}button.danger{background:#8b3046}button:disabled{opacity:.45;cursor:not-allowed}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.players{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.muted{font-size:13px;color:#aaa0b9}.hide{display:none!important}.item{padding:13px 0;border-bottom:1px solid #393047}.item:last-child{border:0}.pill{border-radius:20px;background:#322244;color:#dfbfff;padding:4px 10px;font-size:12px}.stat{font-size:36px;font-weight:850;color:#c39aff}.notice{padding:12px;border:1px solid #6b537e;background:#291c39;border-radius:10px;margin:14px 0;white-space:pre-wrap}.error{border-color:#9b4856;background:#3a1924}.teamlogo{width:42px;height:42px;object-fit:cover;border-radius:9px;background:#261b32}.teamline{display:flex;align-items:center;gap:12px}.admin-list .item{padding:16px 0}.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}.statbox{background:#231b30;padding:13px;border-radius:12px;color:#c9b8dd;font-size:13px}.statbox strong{display:block;font-size:25px;color:#fff;margin-top:5px}.public-card{display:flex;align-items:center;gap:14px;background:#211a2b;border:1px solid #463453;padding:12px;border-radius:12px;margin:10px 0}.public-card img{width:70px;height:70px;object-fit:cover;border-radius:12px}.public-card .teamlogo-placeholder{width:70px;height:70px;border-radius:12px;background:#362448;display:grid;place-items:center;font-weight:900;color:#b99ee8}.public-card strong{overflow-wrap:anywhere}.admin-actions{margin-top:12px}.admin-actions button{flex:1;min-width:115px}@media(max-width:500px){.stats-row{grid-template-columns:1fr 1fr}.public-card img,.public-card .teamlogo-placeholder{width:55px;height:55px}}@media(max-width:740px){.grid,.players{grid-template-columns:1fr}header{align-items:flex-start;flex-direction:column}main{padding-top:20px}}
-</style></head><body><header><div><div class="tag">ORGANIZAÇÃO OFICIAL</div><h1>DEMꓳN <span class="accent">SLꓥYER</span></h1></div><button class="secondary" id="adminToggle">Área ADM</button></header><main><section class="hero"><div class="tag">FREE FIRE • XTREINO</div><h2>Inscrições para o XTREINO</h2><p>Garanta a inscrição da sua line. São <strong>12 vagas titulares</strong> e lista de reservas. A confirmação acontece após análise da organização.</p></section><div class="grid"><section class="panel"><h2>Inscreva sua equipe</h2><form id="signup"><label>Nome da equipe *</label><input name="team" maxlength="50" required placeholder="Nome da LINE"><label>Nome do líder *</label><input name="leader" maxlength="50" required><label>Contato do líder (WhatsApp) *</label><input name="contact" maxlength="25" required placeholder="DDD + número"><label>Logo da equipe (opcional, até 2 MB)</label><input id="logo" type="file" accept="image/png,image/jpeg,image/webp"><div class="players"><div><label>Rush *</label><input name="rush" maxlength="40" required></div><div><label>Segundo rush *</label><input name="rush2" maxlength="40" required></div><div><label>Granadeiro *</label><input name="grenadier" maxlength="40" required></div><div><label>Suporte *</label><input name="support" maxlength="40" required></div></div><p class="muted">Os dados de contato e os nicks são acessíveis somente ao administrador. A logo e o nome da equipe poderão aparecer na lista pública após aprovação.</p><button id="submitBtn" type="submit">Enviar inscrição</button><div id="signupMsg" role="status"></div></form></section><aside><section class="panel"><h2>Vagas confirmadas</h2><div class="stat"><span id="approvedCount">0</span> / 12</div><p class="muted">Inscrições são analisadas pela organização.</p><div id="publicTeams"><p>Carregando equipes...</p></div></section><section class="panel" style="margin-top:20px"><h2>Lines reservas</h2><div class="stat"><span id="reserveCount">0</span></div><div id="reserveTeams"><p>Carregando reservas...</p></div></section><section class="panel" style="margin-top:20px"><h2>Regras do XT</h2><div id="rulesText"><p>4 quedas: Bermuda, Purgatório, Kalahari e Nova Terra.</p><p>Pontuação LBFF 2021. Sem cavalo, sem marcar na loja, apenas carro para locomoção, sem trapaças e máximo de 1 emulador por equipe.</p></div></section></aside></div><section class="panel hide" id="adminPanel" style="margin-top:20px"><h2>Painel administrativo</h2><div id="loginBox"><p>Entre com sua conta de administrador autorizada.</p><form id="loginForm"><label>E-mail ADM</label><input type="email" id="email" required autocomplete="username"><label>Senha</label><input type="password" id="password" required autocomplete="current-password"><button type="submit">Entrar</button></form></div><div id="adminContent" class="hide"><div class="row"><span class="pill">Administrador autenticado</span><button class="secondary" id="logout">Sair</button></div><h2 style="margin-top:25px">Central de inscrições</h2><div class="stats-row"><div class="statbox">Pendentes <strong id="pendingAdmin">0</strong></div><div class="statbox">Titulares <strong id="approvedAdmin">0/12</strong></div><div class="statbox">Reservas <strong id="reserveAdmin">0</strong></div></div><div class="row"><label for="filter">Filtrar:</label><select id="filter" style="width:auto"><option value="all">Todas</option><option value="pending">Pendentes</option><option value="approved">Titulares</option><option value="reserve">Reservas</option><option value="rejected">Recusadas</option></select></div><div id="adminList" class="admin-list"></div><h2 style="margin-top:24px">Editar regras públicas</h2><textarea id="rulesEdit" rows="7" maxlength="3000"></textarea><div style="margin-top:10px"><button id="saveRules">Salvar regras</button></div></div><div id="adminMsg" role="status"></div></section></main><script type="module" src="./app.js"></script></body></html>
+
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>DEMꓳN SLꓥYER | XTREINO</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, system-ui, Arial, sans-serif;
+      background: #090910;
+      color: #f5f4ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: radial-gradient(
+        circle at top right,
+        #392056 0,
+        #090910 48%
+      );
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 22px max(22px, calc((100vw - 1060px)/2));
+      border-bottom: 1px solid #393046;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    h1 {
+      font-size: clamp(23px, 4vw, 38px);
+      margin: 0;
+      letter-spacing: 1px;
+    }
+
+    h2 {
+      font-size: 23px;
+      margin: 0 0 12px;
+    }
+
+    p {
+      color: #bbb3cb;
+      line-height: 1.6;
+    }
+
+    .accent {
+      color: #b58aff;
+    }
+
+    .tag {
+      font-size: 12px;
+      letter-spacing: 3px;
+      color: #c5a5ff;
+      font-weight: 800;
+    }
+
+    main {
+      max-width: 1060px;
+      margin: auto;
+      padding: 40px 22px;
+    }
+
+    .hero {
+      padding: 32px 0 24px;
+    }
+
+    .hero p {
+      max-width: 660px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 20px;
+    }
+
+    .panel {
+      background: #151320;
+      border: 1px solid #393047;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 15px 40px #0003;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: #ded5ee;
+      margin: 13px 0 6px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      min-width: 0;
+      background: #0d0c15;
+      border: 1px solid #51445f;
+      color: white;
+      border-radius: 9px;
+      padding: 12px;
+      font: inherit;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: 2px solid #9c6de5;
+    }
+
+    button {
+      border: 0;
+      border-radius: 9px;
+      background: #9863e8;
+      color: white;
+      font-weight: 750;
+      padding: 12px 18px;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    button:hover {
+      background: #ac83ed;
+    }
+
+    button.secondary {
+      background: #30253e;
+    }
+
+    button.danger {
+      background: #8b3046;
+    }
+
+    button:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .players {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 12px;
+    }
+
+    .muted {
+      font-size: 13px;
+      color: #aaa0b9;
+    }
+
+    .hide {
+      display: none !important;
+    }
+
+    .item {
+      padding: 13px 0;
+      border-bottom: 1px solid #393047;
+    }
+
+    .item:last-child {
+      border: 0;
+    }
+
+    .pill {
+      border-radius: 20px;
+      background: #322244;
+      color: #dfbfff;
+      padding: 4px 10px;
+      font-size: 12px;
+    }
+
+    .stat {
+      font-size: 36px;
+      font-weight: 850;
+      color: #c39aff;
+    }
+
+    .notice {
+      padding: 12px;
+      border: 1px solid #6b537e;
+      background: #291c39;
+      border-radius: 10px;
+      margin: 14px 0;
+      white-space: pre-wrap;
+    }
+
+    .error {
+      border-color: #9b4856;
+      background: #3a1924;
+    }
+
+    .teamlogo {
+      width: 42px;
+      height: 42px;
+      object-fit: cover;
+      border-radius: 9px;
+      background: #261b32;
+    }
+
+    .teamline {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .admin-list .item {
+      padding: 16px 0;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .statbox {
+      background: #231b30;
+      padding: 13px;
+      border-radius: 12px;
+      color: #c9b8dd;
+      font-size: 13px;
+    }
+
+    .statbox strong {
+      display: block;
+      font-size: 25px;
+      color: #fff;
+      margin-top: 5px;
+    }
+
+    .public-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #211a2b;
+      border: 1px solid #463453;
+      padding: 12px;
+      border-radius: 12px;
+      margin: 10px 0;
+    }
+
+    .public-card img {
+      width: 70px;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+
+    .public-card .teamlogo-placeholder {
+      width: 70px;
+      height: 70px;
+      border-radius: 12px;
+      background: #362448;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      color: #b99ee8;
+    }
+
+    .public-card strong {
+      overflow-wrap: anywhere;
+    }
+
+    .admin-actions {
+      margin-top: 12px;
+    }
+
+    .admin-actions button {
+      flex: 1;
+      min-width: 115px;
+    }
+
+    #adminPanel {
+      scroll-margin-top: 15px;
+    }
+
+    @media (max-width: 740px) {
+      .grid,
+      .players {
+        grid-template-columns: 1fr;
+      }
+
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      main {
+        padding-top: 20px;
+      }
+
+      #adminToggle {
+        width: 100%;
+        min-height: 48px;
+      }
+
+      .panel {
+        padding: 18px;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .stats-row {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .public-card img,
+      .public-card .teamlogo-placeholder {
+        width: 55px;
+        height: 55px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div>
+      <div class="tag">ORGANIZAÇÃO OFICIAL</div>
+      <h1>DEMꓳN <span class="accent">SLꓥYER</span></h1>
+    </div>
+
+    <button
+      class="secondary"
+      id="adminToggle"
+      type="button"
+      aria-controls="adminPanel"
+      aria-expanded="false"
+    >
+      Área ADM
+    </button>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="tag">FREE FIRE • XTREINO</div>
+      <h2>Inscrições para o XTREINO</h2>
+
+      <p>
+        Garanta a inscrição da sua line.
+        São <strong>12 vagas titulares</strong> e lista de reservas.
+        A confirmação acontece após análise da organização.
+      </p>
+    </section>
+
+    <div class="grid">
+      <section class="panel">
+        <h2>Inscreva sua equipe</h2>
+
+        <form id="signup">
+          <label for="team">Nome da equipe *</label>
+          <input
+            id="team"
+            name="team"
+            maxlength="50"
+            required
+            placeholder="Nome da LINE"
+          >
+
+          <label for="leader">Nome do líder *</label>
+          <input
+            id="leader"
+            name="leader"
+            maxlength="50"
+            required
+          >
+
+          <label for="contact">Contato do líder (WhatsApp) *</label>
+          <input
+            id="contact"
+            name="contact"
+            maxlength="25"
+            required
+            placeholder="DDD + número"
+          >
+
+          <label for="logo">Logo da equipe (opcional)</label>
+          <input
+            id="logo"
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+          >
+
+          <p class="muted">
+            Escolha uma imagem JPG, PNG ou WEBP.
+            A foto será compactada automaticamente para envio.
+          </p>
+
+          <div class="players">
+            <div>
+              <label for="rush">Rush *</label>
+              <input
+                id="rush"
+                name="rush"
+                maxlength="40"
+                required
+              >
+            </div>
+
+            <div>
+              <label for="rush2">Segundo rush *</label>
+              <input
+                id="rush2"
+                name="rush2"
+                maxlength="40"
+                required
+              >
+            </div>
+
+            <div>
+              <label for="grenadier">Granadeiro *</label>
+              <input
+                id="grenadier"
+                name="grenadier"
+                maxlength="40"
+                required
+              >
+            </div>
+
+            <div>
+              <label for="support">Suporte *</label>
+              <input
+                id="support"
+                name="support"
+                maxlength="40"
+                required
+              >
+            </div>
+          </div>
+
+          <p class="muted">
+            Os dados de contato e os nicks são acessíveis somente
+            ao administrador. A logo e o nome da equipe poderão
+            aparecer na lista pública após aprovação.
+          </p>
+
+          <button id="submitBtn" type="submit">
+            Enviar inscrição
+          </button>
+
+          <div id="signupMsg" role="status"></div>
+        </form>
+      </section>
+
+      <aside>
+        <section class="panel">
+          <h2>Vagas confirmadas</h2>
+
+          <div class="stat">
+            <span id="approvedCount">0</span> / 12
+          </div>
+
+          <p class="muted">
+            Inscrições são analisadas pela organização.
+          </p>
+
+          <div id="publicTeams">
+            <p>Carregando equipes...</p>
+          </div>
+        </section>
+
+        <section class="panel" style="margin-top:20px">
+          <h2>Lines reservas</h2>
+
+          <div class="stat">
+            <span id="reserveCount">0</span>
+          </div>
+
+          <div id="reserveTeams">
+            <p>Carregando reservas...</p>
+          </div>
+        </section>
+
+        <section class="panel" style="margin-top:20px">
+          <h2>Regras do XT</h2>
+
+          <div id="rulesText">
+            <p>
+              4 quedas: Bermuda, Purgatório, Kalahari e Nova Terra.
+            </p>
+
+            <p>
+              Pontuação LBFF 2021. Sem cavalo, sem marcar na loja,
+              apenas carro para locomoção, sem trapaças e máximo
+              de 1 emulador por equipe.
+            </p>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <section
+      class="panel hide"
+      id="adminPanel"
+      style="margin-top:20px"
+    >
+      <h2>Painel administrativo</h2>
+
+      <div id="loginBox">
+        <p>
+          Entre com sua conta de administrador autorizada.
+        </p>
+
+        <form id="loginForm">
+          <label for="email">E-mail ADM</label>
+          <input
+            type="email"
+            id="email"
+            required
+            autocomplete="username"
+          >
+
+          <label for="password">Senha</label>
+          <input
+            type="password"
+            id="password"
+            required
+            autocomplete="current-password"
+          >
+
+          <button type="submit">Entrar</button>
+        </form>
+      </div>
+
+      <div id="adminContent" class="hide">
+        <div class="row">
+          <span class="pill">Administrador autenticado</span>
+
+          <button
+            class="secondary"
+            id="logout"
+            type="button"
+          >
+            Sair
+          </button>
+        </div>
+
+        <h2 style="margin-top:25px">
+          Central de inscrições
+        </h2>
+
+        <div class="stats-row">
+          <div class="statbox">
+            Pendentes
+            <strong id="pendingAdmin">0</strong>
+          </div>
+
+          <div class="statbox">
+            Titulares
+            <strong id="approvedAdmin">0/12</strong>
+          </div>
+
+          <div class="statbox">
+            Reservas
+            <strong id="reserveAdmin">0</strong>
+          </div>
+        </div>
+
+        <div class="row">
+          <label for="filter">Filtrar:</label>
+
+          <select id="filter" style="width:auto">
+            <option value="all">Todas</option>
+            <option value="pending">Pendentes</option>
+            <option value="approved">Titulares</option>
+            <option value="reserve">Reservas</option>
+            <option value="rejected">Recusadas</option>
+          </select>
+        </div>
+
+        <div id="adminList" class="admin-list"></div>
+
+        <h2 style="margin-top:24px">
+          Editar regras públicas
+        </h2>
+
+        <textarea
+          id="rulesEdit"
+          rows="7"
+          maxlength="3000"
+        ></textarea>
+
+        <div style="margin-top:10px">
+          <button id="saveRules" type="button">
+            Salvar regras
+          </button>
+        </div>
+      </div>
+
+      <div id="adminMsg" role="status"></div>
+    </section>
+  </main>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
