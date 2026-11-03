@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function admin() {
+      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    function validRegistration() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['team','leader','contact','rush','rush2','grenadier','support','logo','status','createdAt'])
+        && d.keys().hasAll(['team','leader','contact','rush','rush2','grenadier','support','logo','status','createdAt'])
+        && d.team is string && d.team.size() > 0 && d.team.size() <= 50
+        && d.leader is string && d.leader.size() > 0 && d.leader.size() <= 50
+        && d.contact is string && d.contact.size() > 0 && d.contact.size() <= 25
+        && d.rush is string && d.rush.size() > 0 && d.rush.size() <= 40
+        && d.rush2 is string && d.rush2.size() > 0 && d.rush2.size() <= 40
+        && d.grenadier is string && d.grenadier.size() > 0 && d.grenadier.size() <= 40
+        && d.support is string && d.support.size() > 0 && d.support.size() <= 40
+        && d.logo is string && d.logo.size() <= 130000
+        && (d.logo == '' || d.logo.matches('data:image/jpeg;base64,[A-Za-z0-9+/=]+'))
+        && d.status == 'pending'
+        && d.createdAt == request.time;
+    }
+    match /admins/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow list, create, update, delete: if false;
+    }
+    match /registrations/{id} {
+      allow create: if validRegistration();
+      allow get, list: if admin();
+      allow update: if admin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && request.resource.data.status in ['pending','approved','reserve','rejected'];
+      allow delete: if false;
+    }
+    match /publicTeams/{id} {
+      allow get, list: if true;
+      allow create, update: if admin()
+        && request.resource.data.keys().hasOnly(['team','logo','status'])
+        && request.resource.data.keys().hasAll(['team','logo','status'])
+        && request.resource.data.team is string && request.resource.data.team.size() <= 50
+        && request.resource.data.logo is string && request.resource.data.logo.size() <= 130000
+        && request.resource.data.status in ['approved','reserve','hidden'];
+      allow delete: if false;
+    }
+    match /settings/xt {
+      allow read: if true;
+      allow create, update: if admin() && request.resource.data.keys().hasOnly(['rules'])
+        && request.resource.data.rules is string && request.resource.data.rules.size() <= 3000;
+      allow delete: if false;
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}
