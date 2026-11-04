@@ -1,8 +1,576 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DEMꓳN SLꓥYER | XTREINOS</title><style>
-:root{font-family:Inter,system-ui,Arial,sans-serif;color:#f5f1ff;background:#090911}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top right,#37204d,#090911 55%);min-height:100vh}header{padding:24px max(20px,calc((100vw - 1050px)/2));border-bottom:1px solid #443352;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}a{color:#d7b4ff}h1{font-size:clamp(23px,4vw,36px);margin:0}h2{margin-top:0}main{max-width:1080px;margin:auto;padding:20px}.panel{background:#171020;border:1px solid #463453;border-radius:16px;padding:20px;margin:20px 0}.muted{color:#c5b8d0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}label{display:block;font-size:14px;font-weight:600}input,select{display:block;width:100%;background:#261b32;border:1px solid #705586;color:white;border-radius:9px;padding:12px;margin-top:6px;font:inherit}button{border:0;background:#8154cb;color:white;padding:11px 15px;border-radius:9px;font-weight:700;cursor:pointer;margin:4px 4px 4px 0}button:disabled{opacity:.5}.danger{background:#9b3755}.hide{display:none!important}.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:550px}td,th{padding:12px 9px;border-bottom:1px solid #493953;text-align:left}th{color:#d5c1e6}#notice{min-height:20px}img.preview{max-width:100%;max-height:300px;border-radius:10px;margin:12px 0}.pill{background:#332142;border-radius:999px;padding:5px 10px;font-size:12px}nav a{display:inline-block;margin-right:12px}
-</style></head><body><header><div><h1>🏆 DEMꓳN SLꓥYER</h1><p class="muted">XTREINOS • CLASSIFICAÇÃO ACUMULADA</p></div><nav><a href="./index.html">← Inscrições</a><a href="#ranking">Classificação</a><a href="#adm">Área ADM</a></nav></header><main>
-<section class="panel" id="ranking"><h2>🏆 Classificação geral</h2><p class="muted">Somatório dos XTREINOS de segunda, quarta e sexta, em todas as semanas.</p><div id="rankTable">Carregando...</div></section>
-<section class="panel"><h2>📅 Histórico de XTREINOS</h2><div id="history">Carregando...</div></section>
-<section class="panel" id="adm"><h2>🔐 Administração dos resultados</h2><div id="loginArea"><p class="muted">Entre com a conta ADM já cadastrada no Firebase.</p><form id="loginForm" class="grid"><label>E-mail<input id="email" type="email" required autocomplete="username"></label><label>Senha<input id="password" type="password" required autocomplete="current-password"></label><div><button type="submit">Entrar</button></div></form></div>
-<div id="adminArea" class="hide"><button id="logout" class="danger">Sair do ADM</button><h3>Equipe permanente</h3><p class="muted">Crie a equipe uma única vez. O ID do capitão pode mudar sem apagar pontos. Selecione a equipe existente para atualizar o capitão.</p><form id="teamForm" class="grid"><label>Equipe existente (opcional)<select id="existingTeam"><option value="">Criar nova equipe</option></select></label><label>Nome da equipe<input id="teamName" required maxlength="80"></label><label>ID do capitão FF<input id="captainUid" required inputmode="numeric" pattern="[0-9]{5,15}" maxlength="15"></label><div><button type="submit">Salvar equipe</button></div></form><h3>Registrar resultado</h3><p class="muted">A print é exibida apenas para conferência. Informe colocação e abates manualmente.</p><form id="resultForm"><div class="grid"><label>Data<input id="date" type="date" required></label><label>Queda<select id="round"><option value="1">1 — Bermuda</option><option value="2">2 — Purgatório</option><option value="3">3 — Kalahari</option><option value="4">4 — Nova Terra</option></select></label><label>Equipe<select id="teamId" required></select></label><label>Colocação<select id="position"></select></label><label>Abates<input id="kills" type="number" min="0" max="100" value="0" required></label><label>Print para conferir<input id="print" type="file" accept="image/png,image/jpeg,image/webp"></label></div><img id="preview" class="preview hide" alt="Prévia da print"><div><button type="submit">Salvar resultado</button><button type="button" id="cancel">Cancelar edição</button></div></form><h3>Resultados lançados</h3><div id="adminResults" class="scroll"></div></div><p id="notice" role="status"></p></section>
-</main><script type="module" src="./xtreinos.js"></script></body></html>
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090910">
+  <title>XTREINOS | DEMꓳN SLꓥYER</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090910;
+      --panel: #15131f;
+      --panel2: #201b2d;
+      --border: #393046;
+      --purple: #b58aff;
+      --text: #f5f4ff;
+      --muted: #bbb3cb;
+      --green: #86efac;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, Arial, sans-serif;
+      color: var(--text);
+      background:
+        linear-gradient(
+          rgba(9, 9, 16, 0.82),
+          rgba(9, 9, 16, 0.95)
+        ),
+        url("./tanjiro.png") center top / cover fixed,
+        var(--bg);
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      background: rgba(9, 9, 16, 0.9);
+      padding: 22px 20px;
+      text-align: center;
+    }
+
+    .brand {
+      font-size: clamp(24px, 5vw, 40px);
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: var(--purple);
+      margin: 0;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: white;
+      border: 1px solid var(--border);
+      background: var(--panel2);
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-weight: bold;
+    }
+
+    nav a.active {
+      background: #7045bd;
+      border-color: var(--purple);
+    }
+
+    nav a:hover {
+      background: #56368e;
+    }
+
+    main {
+      width: min(1100px, 94%);
+      margin: 32px auto;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 34px 18px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: rgba(21, 19, 31, 0.94);
+      margin-bottom: 25px;
+    }
+
+    .hero h2 {
+      margin: 0 0 12px;
+      font-size: clamp(24px, 5vw, 36px);
+      color: var(--purple);
+    }
+
+    .hero p {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .section {
+      background: rgba(21, 19, 31, 0.95);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 24px;
+    }
+
+    .section h2 {
+      margin: 0 0 20px;
+      font-size: 23px;
+    }
+
+    .days {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .day {
+      padding: 22px 12px;
+      border-radius: 15px;
+      background: rgba(32, 27, 45, 0.95);
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .day strong {
+      display: block;
+      font-size: 20px;
+      color: var(--purple);
+      margin-bottom: 8px;
+    }
+
+    .day span {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 580px;
+    }
+
+    th, td {
+      padding: 13px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      color: var(--purple);
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+
+    td {
+      font-size: 14px;
+    }
+
+    tbody tr:hover {
+      background: rgba(181, 138, 255, 0.07);
+    }
+
+    .item {
+      padding: 20px;
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 15px;
+      overflow-x: auto;
+    }
+
+    .item h3 {
+      color: var(--purple);
+      margin-top: 0;
+    }
+
+    .item p {
+      color: var(--muted);
+    }
+
+    .item table {
+      min-width: 420px;
+    }
+
+    .admin-box {
+      border: 1px solid #644497;
+      background: rgba(30, 22, 45, 0.97);
+    }
+
+    .hide {
+      display: none !important;
+    }
+
+    form {
+      display: grid;
+      gap: 15px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    label {
+      display: grid;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    input, select {
+      width: 100%;
+      min-width: 0;
+      border: 1px solid var(--border);
+      background: #0e0c16;
+      color: white;
+      padding: 13px;
+      border-radius: 10px;
+      font: inherit;
+    }
+
+    input:focus, select:focus {
+      outline: 2px solid var(--purple);
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      background: #7045bd;
+      color: white;
+      padding: 13px 18px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #895ad8;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .secondary {
+      background: #393046;
+    }
+
+    .notice {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 12px;
+    }
+
+    .maps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .map-pill {
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      background: var(--panel2);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    footer {
+      padding: 30px 15px;
+      text-align: center;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 650px) {
+      .days {
+        grid-template-columns: 1fr;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section {
+        padding: 16px;
+      }
+
+      main {
+        width: 96%;
+      }
+
+      nav a {
+        flex: 1;
+        text-align: center;
+      }
+
+      .hero {
+        padding: 24px 14px;
+      }
+
+      body {
+        background-attachment: scroll;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1 class="brand">DEMꓳN SLꓥYER</h1>
+    <p class="subtitle">
+      SISTEMA OFICIAL DE XTREINOS E CLASSIFICAÇÃO
+    </p>
+
+    <nav>
+      <a href="./index.html">
+        📝 INSCRIÇÕES
+      </a>
+
+      <a href="./xtreinos.html" class="active">
+        🏆 XTREINOS
+      </a>
+    </nav>
+  </header>
+
+  <main>
+
+    <section class="hero">
+      <h2>🏆 CLASSIFICAÇÃO GERAL</h2>
+      <p>
+        Acompanhe a classificação das equipes,
+        resultados das quedas e pontuação acumulada
+        durante os XTREINOS da DEMꓳN SLꓥYER.
+      </p>
+
+      <div class="maps">
+        <span class="map-pill">🗺️ Bermuda</span>
+        <span class="map-pill">🗺️ Purgatório</span>
+        <span class="map-pill">🗺️ Kalahari</span>
+        <span class="map-pill">🗺️ Nova Terra</span>
+      </div>
+    </section>
+
+    <div class="days">
+      <div class="day">
+        <strong>SEGUNDA</strong>
+        <span>4 QUEDAS • LBFF 2021</span>
+      </div>
+
+      <div class="day">
+        <strong>QUARTA</strong>
+        <span>4 QUEDAS • LBFF 2021</span>
+      </div>
+
+      <div class="day">
+        <strong>SEXTA</strong>
+        <span>4 QUEDAS • LBFF 2021</span>
+      </div>
+    </div>
+
+    <section class="section">
+      <h2>🥇 RANKING DAS EQUIPES</h2>
+
+      <p class="notice">
+        Os pontos são acumulados entre os XTREINOS
+        e atualizados conforme os resultados
+        registrados pela organização.
+      </p>
+
+      <div class="table-scroll" id="ranking">
+        <p>Carregando classificação...</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>📋 HISTÓRICO DE RESULTADOS</h2>
+
+      <p class="notice">
+        Consulte as quedas registradas,
+        colocações, abates e pontuações.
+      </p>
+
+      <div id="matchHistory">
+        <p>Carregando resultados...</p>
+      </div>
+    </section>
+
+    <section class="section admin-box">
+      <h2>🔐 PAINEL ADMINISTRATIVO</h2>
+
+      <p class="notice">
+        Acesso exclusivo da organização para
+        cadastrar e gerenciar resultados.
+      </p>
+
+      <div id="xtLoginBox">
+        <form id="xtLoginForm">
+
+          <label>
+            E-mail do administrador
+            <input
+              type="email"
+              id="xtEmail"
+              autocomplete="username"
+              placeholder="Digite seu e-mail"
+              required
+            >
+          </label>
+
+          <label>
+            Senha
+            <input
+              type="password"
+              id="xtPassword"
+              autocomplete="current-password"
+              placeholder="Digite sua senha"
+              required
+            >
+          </label>
+
+          <button type="submit">
+            ENTRAR COMO ADM
+          </button>
+        </form>
+      </div>
+
+      <div id="xtAdminPanel" class="hide">
+
+        <h3>⚙️ GERENCIAR RESULTADOS</h3>
+
+        <p class="notice">
+          Registre a colocação e os abates de cada
+          equipe. Os pontos serão calculados
+          automaticamente.
+        </p>
+
+        <form id="xtResultForm">
+
+          <div class="form-grid">
+
+            <label>
+              Data do XTREINO
+              <input
+                type="date"
+                id="matchDate"
+                required
+              >
+            </label>
+
+            <label>
+              Dia do XTREINO
+              <select id="matchDay" required>
+                <option value="segunda">Segunda-feira</option>
+                <option value="quarta">Quarta-feira</option>
+                <option value="sexta">Sexta-feira</option>
+              </select>
+            </label>
+
+            <label>
+              Queda / Mapa
+              <select id="matchRound" required>
+                <option value="1">1ª — Bermuda</option>
+                <option value="2">2ª — Purgatório</option>
+                <option value="3">3ª — Kalahari</option>
+                <option value="4">4ª — Nova Terra</option>
+              </select>
+            </label>
+
+            <label>
+              Equipe
+              <select id="teamSelect" required>
+                <option value="">Carregando equipes...</option>
+              </select>
+            </label>
+
+            <label>
+              Colocação
+              <select id="matchPosition" required>
+                <option value="1">1º lugar</option>
+                <option value="2">2º lugar</option>
+                <option value="3">3º lugar</option>
+                <option value="4">4º lugar</option>
+                <option value="5">5º lugar</option>
+                <option value="6">6º lugar</option>
+                <option value="7">7º lugar</option>
+                <option value="8">8º lugar</option>
+                <option value="9">9º lugar</option>
+                <option value="10">10º lugar</option>
+                <option value="11">11º lugar</option>
+                <option value="12">12º lugar</option>
+              </select>
+            </label>
+
+            <label>
+              Quantidade de abates
+              <input
+                type="number"
+                id="matchKills"
+                min="0"
+                max="100"
+                value="0"
+                required
+              >
+            </label>
+
+          </div>
+
+          <button type="submit">
+            💾 SALVAR RESULTADO
+          </button>
+
+        </form>
+
+        <p class="notice">
+          Para corrigir uma pontuação, selecione
+          novamente a mesma data, queda e equipe.
+          O resultado anterior será substituído.
+        </p>
+
+        <div style="margin-top:20px">
+          <button
+            type="button"
+            class="secondary"
+            id="xtLogout"
+          >
+            SAIR DO PAINEL
+          </button>
+        </div>
+      </div>
+
+      <p id="xtMessage" class="notice" role="status"></p>
+    </section>
+
+  </main>
+
+  <footer>
+    DEMꓳN SLꓥYER © 2026
+    <p>XTREINOS • CLASSIFICAÇÃO GERAL</p>
+  </footer>
+
+  <script type="module" src="./xtreinos.js"></script>
+
+</body>
+</html>
+
