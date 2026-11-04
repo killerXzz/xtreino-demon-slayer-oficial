@@ -23,15 +23,15 @@ import {
   writeBatch
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-// FIREBASE - DEMON SLAYER XTREINO
+// FIREBASE - DEMON SLAYER OFC
 const firebaseConfig = {
-  apiKey: "AIzaSyBX6hLTNoeD9LhcUv-lG3qqW69MbJdGQN8",
+  apiKey: "AIzaSyBX6hLTNoeD9LhcUV-lG3qqW69MbJdGQN8",
   authDomain: "demon-slayer-xtreino-e81b7.firebaseapp.com",
   projectId: "demon-slayer-xtreino-e81b7",
   storageBucket: "demon-slayer-xtreino-e81b7.firebasestorage.app",
   messagingSenderId: "545991125458",
-  appId: "1:545991125458:web:e9bdb3322edad31907800b",
-  measurementId: "G-0H6S88RGGL"
+  appId: "1:545991125458:web:b545045a7e2840ca07800b",
+  measurementId: "G-282NX7FFD6"
 };
 
 // UID EXCLUSIVO DO ADMINISTRADOR
