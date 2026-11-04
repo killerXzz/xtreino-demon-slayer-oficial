@@ -149,6 +149,7 @@ $('signup').addEventListener('submit', async e => {
     const data = {
       team: String(f.get('team') ?? '').trim(),
       leader: String(f.get('leader') ?? '').trim(),
+      captainUid: String(f.get('captainUid') ?? '').trim(),
       contact: String(f.get('contact') ?? '').trim(),
       rush: String(f.get('rush') ?? '').trim(),
       rush2: String(f.get('rush2') ?? '').trim(),
@@ -162,6 +163,7 @@ $('signup').addEventListener('submit', async e => {
     const required = [
       'team',
       'leader',
+      'captainUid',
       'contact',
       'rush',
       'rush2',
@@ -171,6 +173,10 @@ $('signup').addEventListener('submit', async e => {
 
     if (required.some(key => !data[key])) {
       throw Error('Preencha todos os campos obrigatórios.');
+    }
+
+    if (!/^\d{5,15}$/.test(data.captainUid)) {
+      throw Error('Informe um ID do Free Fire válido (5 a 15 dígitos).');
     }
 
     await addDoc(collection(db, 'registrations'), data);
@@ -419,6 +425,7 @@ function renderAdmin() {
 
         <p class="muted">
           Líder: ${esc(x.leader)}
+          | ID FF: ${esc(x.captainUid || 'Não informado')}
           | Contato: ${esc(x.contact)}
           <br>
           Rush: ${esc(x.rush)}
@@ -501,6 +508,7 @@ $('adminList').addEventListener('click', async e => {
         doc(db, 'publicTeams', team.id),
         {
           team: team.team,
+          captainUid: team.captainUid || '',
           logo: team.logo || '',
           status
         }
@@ -510,6 +518,7 @@ $('adminList').addEventListener('click', async e => {
         doc(db, 'publicTeams', team.id),
         {
           team: team.team,
+          captainUid: team.captainUid || '',
           logo: '',
           status: 'hidden'
         }
@@ -541,3 +550,63 @@ $('saveRules').addEventListener('click', async () => {
     msg('adminMsg', err(ex), true);
   }
 });
+
+// NAVEGAÇÃO PARA SEGUNDA PÁGINA
+(function setupXTNavigation() {
+  const style = document.createElement('style');
+  style.textContent = `
+    .xt-second-link {
+      display: inline-block;
+      margin: 12px;
+      padding: 12px 18px;
+      border-radius: 10px;
+      background: #7045bd;
+      color: white;
+      text-decoration: none;
+      font-weight: 700;
+    }
+  `;
+  document.head.append(style);
+
+  const link = document.createElement('a');
+  link.className = 'xt-second-link';
+  link.href = './xtreinos.html';
+  link.textContent = '🏆 XTREINOS / CLASSIFICAÇÃO GERAL';
+
+  (document.querySelector('header') || document.body).append(link);
+
+  // ADICIONAR CAMPO ID DO CAPITÃO
+  const signup = document.getElementById('signup');
+
+  if (!signup || signup.querySelector('[name="captainUid"]')) return;
+
+  const label = document.createElement('label');
+  label.textContent = 'ID do capitão no Free Fire (obrigatório)';
+  label.style.cssText =
+    'display:block;margin:12px 0;font-weight:600';
+
+  const input = document.createElement('input');
+  input.name = 'captainUid';
+  input.type = 'text';
+  input.inputMode = 'numeric';
+  input.pattern = '[0-9]{5,15}';
+  input.maxLength = 15;
+  input.required = true;
+  input.placeholder = 'Digite o ID do capitão';
+  input.style.cssText = `
+    display:block;
+    width:100%;
+    max-width:420px;
+    padding:12px;
+    margin-top:6px;
+    border-radius:8px;
+  `;
+
+  label.append(input);
+
+  signup.insertBefore(
+    label,
+    signup.querySelector('#submitBtn') || signup.lastElementChild
+  );
+})();
+
