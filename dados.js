@@ -20,21 +20,21 @@ import {
   deleteDoc,
   onSnapshot,
   serverTimestamp,
-  writeBatch,
-  runTransaction
+  writeBatch
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-// CONFIGURAÇÃO FIREBASE
+// FIREBASE - DEMON SLAYER XTREINO
 const firebaseConfig = {
   apiKey: "AIzaSyBX6hLTNoeD9LhcUv-lG3qqW69MbJdGQN8",
   authDomain: "demon-slayer-xtreino-e81b7.firebaseapp.com",
   projectId: "demon-slayer-xtreino-e81b7",
   storageBucket: "demon-slayer-xtreino-e81b7.firebasestorage.app",
   messagingSenderId: "545991125458",
-  appId: "1:545991125458:web:e9bdb3322edad31907800b"
+  appId: "1:545991125458:web:e9bdb3322edad31907800b",
+  measurementId: "G-0H6S88RGGL"
 };
 
-// UID DA CONTA ADMINISTRADORA
+// UID EXCLUSIVO DO ADMINISTRADOR
 const ADMIN_UID = "tadNQeNTUQMGd5UTqT9HdnlTnfk2";
 
 const app = initializeApp(firebaseConfig);
@@ -96,7 +96,7 @@ function sortedRanking(teams) {
     )
     .map((team, index) => ({
       team: team.team,
-      status: team.status,
+      status: "approved",
       position: index + 1,
       placement: Number(team.placement) || 0,
       kills: Number(team.kills) || 0,
@@ -104,11 +104,47 @@ function sortedRanking(teams) {
     }));
 }
 
+function readableError(error) {
+  const code = error?.code || "";
+
+  const messages = {
+    "auth/api-key-not-valid":
+      "A chave API do Firebase não está sendo aceita. " +
+      "Confira a chave e suas restrições no Google Cloud.",
+
+    "auth/invalid-api-key":
+      "Chave API inválida. Confira a configuração do Firebase.",
+
+    "auth/invalid-credential":
+      "E-mail ou senha incorretos.",
+
+    "auth/wrong-password":
+      "Senha incorreta.",
+
+    "auth/user-not-found":
+      "Usuário não encontrado no Firebase.",
+
+    "auth/operation-not-allowed":
+      "Ative E-mail/Senha em Firebase Authentication.",
+
+    "auth/too-many-requests":
+      "Muitas tentativas. Aguarde antes de tentar novamente.",
+
+    "auth/network-request-failed":
+      "Falha de conexão com o Firebase.",
+
+    "permission-denied":
+      "Permissão negada pelas regras do Firestore."
+  };
+
+  return new Error(messages[code] || error?.message || "Erro desconhecido.");
+}
+
 const XT = {
 
   isAdmin,
 
-  // LOGIN ADM
+  // AUTENTICAÇÃO
   watchAuth(callback) {
     return onAuthStateChanged(auth, user => {
       callback(Boolean(user && user.uid === ADMIN_UID));
@@ -116,18 +152,23 @@ const XT = {
   },
 
   async login(email, password) {
-    const result = await signInWithEmailAndPassword(
-      auth,
-      String(email).trim(),
-      password
-    );
+    try {
+      const result = await signInWithEmailAndPassword(
+        auth,
+        String(email).trim(),
+        password
+      );
 
-    if (result.user.uid !== ADMIN_UID) {
-      await signOut(auth);
-      throw Error("Esta conta não é administradora.");
+      if (result.user.uid !== ADMIN_UID) {
+        await signOut(auth);
+        throw Error("Esta conta não é administradora.");
+      }
+
+      return { ok: true };
+
+    } catch (error) {
+      throw readableError(error);
     }
-
-    return { ok: true };
   },
 
   async logout() {
@@ -135,7 +176,7 @@ const XT = {
     return { ok: true };
   },
 
-  // DADOS PÚBLICOS EM TEMPO REAL
+  // ATUALIZAÇÃO PÚBLICA EM TEMPO REAL
   watchPublic(callback, onError) {
     const data = {
       config: { ...DEFAULT_CONFIG },
@@ -151,9 +192,9 @@ const XT = {
       partners: [...data.partners]
     });
 
-    const unsubscribers = [];
+    const unsubs = [];
 
-    unsubscribers.push(
+    unsubs.push(
       onSnapshot(doc(db, "settings", "xt"), snap => {
         data.config = {
           ...DEFAULT_CONFIG,
@@ -163,21 +204,21 @@ const XT = {
       }, onError)
     );
 
-    unsubscribers.push(
+    unsubs.push(
       onSnapshot(col("publicTeams"), snap => {
         data.teams = snap.docs.map(toTeam);
         emit();
       }, onError)
     );
 
-    unsubscribers.push(
+    unsubs.push(
       onSnapshot(col("history"), snap => {
         data.history = snap.docs.map(toTeam);
         emit();
       }, onError)
     );
 
-    unsubscribers.push(
+    unsubs.push(
       onSnapshot(col("partners"), snap => {
         data.partners = snap.docs.map(toTeam);
         emit();
@@ -186,10 +227,10 @@ const XT = {
 
     emit();
 
-    return () => unsubscribers.forEach(fn => fn());
+    return () => unsubs.forEach(fn => fn());
   },
 
-  // INSCRIÇÕES VISÍVEIS SOMENTE AO ADM
+  // INSCRIÇÕES - SOMENTE ADM
   watchRegistrations(callback, onError) {
     requireAdmin();
 
@@ -198,7 +239,7 @@ const XT = {
     }, onError);
   },
 
-  // CADASTRAR EQUIPE
+  // CADASTRO DE LINE
   async register(team) {
     const required = [
       "name", "captain", "phone",
@@ -229,8 +270,10 @@ const XT = {
       throw Error("Logo inválida ou muito grande.");
     }
 
-    const publicSnap = await getDocs(col("publicTeams"));
-    const configSnap = await getDoc(doc(db, "settings", "xt"));
+    const [publicSnap, configSnap] = await Promise.all([
+      getDocs(col("publicTeams")),
+      getDoc(doc(db, "settings", "xt"))
+    ]);
 
     const capacity = Number(
       configSnap.exists()
@@ -265,7 +308,7 @@ const XT = {
     };
   },
 
-  // APROVAR, RESERVAR OU RECUSAR
+  // APROVAR / RESERVA / RECUSAR
   async setStatus(id, status) {
     requireAdmin();
 
@@ -285,6 +328,7 @@ const XT = {
 
     if (status === "approved") {
       const configSnap = await getDoc(doc(db, "settings", "xt"));
+
       const capacity = Number(
         configSnap.exists()
           ? configSnap.data().capacity
@@ -317,6 +361,7 @@ const XT = {
         kills: Number(old.kills) || 0,
         points: Number(old.points) || 0
       });
+
     } else {
       batch.delete(publicRef);
     }
@@ -360,7 +405,7 @@ const XT = {
     return { ok: true };
   },
 
-  // CONFIGURAÇÕES DO XT
+  // CONFIGURAÇÕES
   async saveConfig(config) {
     requireAdmin();
 
@@ -434,13 +479,13 @@ const XT = {
     return { ok: true };
   },
 
-  // RANKING DO XT ATUAL
+  // RANKING
   async getRanking() {
     const snap = await getDocs(col("publicTeams"));
     return sortedRanking(snap.docs.map(toTeam));
   },
 
-  // HISTÓRICO DE CAMPEONATOS
+  // HISTÓRICO
   async getHistory() {
     const snap = await getDocs(col("history"));
 
@@ -493,15 +538,13 @@ const XT = {
     const operations = registrations.size + teams.size + 2;
 
     if (operations > 500) {
-      throw Error(
-        "Há muitas inscrições para finalizar em uma única operação."
-      );
+      throw Error("Muitas inscrições para finalizar em uma operação.");
     }
 
     const batch = writeBatch(db);
     const historyRef = doc(col("history"));
 
-    // 1. SALVAR HISTÓRICO
+    // SALVAR HISTÓRICO
     batch.set(historyRef, {
       event: config.event,
       finishedAt: serverTimestamp(),
@@ -510,24 +553,24 @@ const XT = {
       ranking: [...ranking, ...reserves]
     });
 
-    // 2. REMOVER TODAS AS INSCRIÇÕES
+    // REMOVER INSCRIÇÕES
     registrations.docs.forEach(s => {
       batch.delete(s.ref);
     });
 
-    // 3. REMOVER CONFIRMADAS E RESERVAS
+    // REMOVER EQUIPES E RESERVAS
     teams.docs.forEach(s => {
       batch.delete(s.ref);
     });
 
-    // 4. LIBERAR AS 12 VAGAS
+    // LIBERAR 12 VAGAS
     batch.set(doc(db, "settings", "xt"), {
       event: config.event,
       capacity: 12,
       rules: config.rules || DEFAULT_RULES
     });
 
-    // 5. CONFIRMAR TUDO JUNTO
+    // EXECUTAR TUDO JUNTO
     await batch.commit();
 
     return {
@@ -579,5 +622,3 @@ const XT = {
 };
 
 export default XT;
-
-
