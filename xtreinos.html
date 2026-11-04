@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#090910">
   <title>XTREINOS | DEMꓳN SLꓥYER</title>
 
@@ -18,6 +18,7 @@
       --text: #f5f4ff;
       --muted: #bbb3cb;
       --green: #86efac;
+      --red: #a62b50;
     }
 
     * {
@@ -45,7 +46,7 @@
     header {
       border-bottom: 1px solid var(--border);
       background: rgba(9, 9, 16, 0.9);
-      padding: 22px 20px;
+      padding: 24px 20px;
       text-align: center;
     }
 
@@ -59,7 +60,7 @@
 
     .subtitle {
       color: var(--muted);
-      margin-top: 8px;
+      margin-top: 10px;
     }
 
     nav {
@@ -80,13 +81,10 @@
       font-weight: bold;
     }
 
-    nav a.active {
+    nav a.active,
+    nav a:hover {
       background: #7045bd;
       border-color: var(--purple);
-    }
-
-    nav a:hover {
-      background: #56368e;
     }
 
     main {
@@ -96,7 +94,7 @@
 
     .hero {
       text-align: center;
-      padding: 34px 18px;
+      padding: 35px 20px;
       border-radius: 18px;
       border: 1px solid var(--border);
       background: rgba(21, 19, 31, 0.94);
@@ -123,7 +121,7 @@
     }
 
     .section h2 {
-      margin: 0 0 20px;
+      margin: 0 0 18px;
       font-size: 23px;
     }
 
@@ -261,7 +259,7 @@
     }
 
     button:hover {
-      background: #895ad8;
+      filter: brightness(1.15);
     }
 
     button:disabled {
@@ -273,14 +271,20 @@
       background: #393046;
     }
 
+    .danger {
+      background: var(--red);
+    }
+
     .notice {
       color: var(--muted);
       font-size: 14px;
+      line-height: 1.7;
       margin-top: 12px;
     }
 
     .maps {
       display: flex;
+      justify-content: center;
       flex-wrap: wrap;
       gap: 8px;
       margin-top: 16px;
@@ -295,6 +299,38 @@
       font-size: 12px;
     }
 
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 18px 0;
+    }
+
+    .tabs button {
+      flex: 1;
+      min-width: 125px;
+      border: 1px solid #7045bd;
+    }
+
+    .finish-box {
+      padding: 20px;
+      margin-top: 25px;
+      background: #1b1528;
+      border: 1px solid #8053ae;
+      border-radius: 14px;
+    }
+
+    .finish-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .finish-buttons button {
+      min-height: 50px;
+    }
+
     footer {
       padding: 30px 15px;
       text-align: center;
@@ -303,11 +339,9 @@
     }
 
     @media (max-width: 650px) {
-      .days {
-        grid-template-columns: 1fr;
-      }
-
-      .form-grid {
+      .days,
+      .form-grid,
+      .finish-buttons {
         grid-template-columns: 1fr;
       }
 
@@ -339,6 +373,7 @@
 
   <header>
     <h1 class="brand">DEMꓳN SLꓥYER</h1>
+
     <p class="subtitle">
       SISTEMA OFICIAL DE XTREINOS E CLASSIFICAÇÃO
     </p>
@@ -351,17 +386,26 @@
       <a href="./xtreinos.html" class="active">
         🏆 XTREINOS
       </a>
+
+      <a href="#rankingSection">
+        📊 TABELAS
+      </a>
+
+      <a href="#adminSection">
+        🔐 ÁREA ADM
+      </a>
     </nav>
   </header>
 
   <main>
 
     <section class="hero">
-      <h2>🏆 CLASSIFICAÇÃO GERAL</h2>
+      <h2>🏆 XTREINOS DEMꓳN SLꓥYER</h2>
+
       <p>
-        Acompanhe a classificação das equipes,
-        resultados das quedas e pontuação acumulada
-        durante os XTREINOS da DEMꓳN SLꓥYER.
+        Acompanhe as tabelas de segunda, quarta e sexta-feira,
+        a classificação semanal e o ranking geral acumulado
+        de todas as semanas.
       </p>
 
       <div class="maps">
@@ -389,26 +433,31 @@
       </div>
     </div>
 
-    <section class="section">
+    <section class="section" id="rankingSection">
       <h2>🥇 RANKING DAS EQUIPES</h2>
 
       <p class="notice">
-        Os pontos são acumulados entre os XTREINOS
-        e atualizados conforme os resultados
-        registrados pela organização.
+        Escolha o dia e o tipo de classificação.
+        A tabela semanal pode ser reiniciada pelo ADM.
+        A classificação geral mantém os pontos das semanas anteriores.
       </p>
+
+      <div id="xtDayTabs" class="tabs"></div>
+
+      <div id="xtModeTabs" class="tabs"></div>
 
       <div class="table-scroll" id="ranking">
         <p>Carregando classificação...</p>
       </div>
     </section>
 
-    <section class="section">
-      <h2>📋 HISTÓRICO DE RESULTADOS</h2>
+    <section class="section" id="historySection">
+      <h2>📋 RESULTADOS E HISTÓRICO</h2>
 
       <p class="notice">
-        Consulte as quedas registradas,
-        colocações, abates e pontuações.
+        Consulte as quedas, colocações, abates e pontuações.
+        Selecione HISTÓRICO acima para consultar
+        os resultados arquivados das semanas anteriores.
       </p>
 
       <div id="matchHistory">
@@ -416,12 +465,12 @@
       </div>
     </section>
 
-    <section class="section admin-box">
+    <section class="section admin-box" id="adminSection">
       <h2>🔐 PAINEL ADMINISTRATIVO</h2>
 
       <p class="notice">
-        Acesso exclusivo da organização para
-        cadastrar e gerenciar resultados.
+        Acesso exclusivo da organização para cadastrar
+        resultados, finalizar XTREINOS e gerenciar as tabelas.
       </p>
 
       <div id="xtLoginBox">
@@ -452,6 +501,7 @@
           <button type="submit">
             ENTRAR COMO ADM
           </button>
+
         </form>
       </div>
 
@@ -460,9 +510,8 @@
         <h3>⚙️ GERENCIAR RESULTADOS</h3>
 
         <p class="notice">
-          Registre a colocação e os abates de cada
-          equipe. Os pontos serão calculados
-          automaticamente.
+          Registre a colocação e os abates de cada equipe.
+          A pontuação LBFF 2021 será calculada automaticamente.
         </p>
 
         <form id="xtResultForm">
@@ -543,10 +592,53 @@
         </form>
 
         <p class="notice">
-          Para corrigir uma pontuação, selecione
-          novamente a mesma data, queda e equipe.
-          O resultado anterior será substituído.
+          Para corrigir uma pontuação, selecione novamente
+          a mesma data, queda e equipe.
+          O resultado anterior será substituído,
+          desde que a queda ainda não tenha sido finalizada.
         </p>
+
+        <section class="finish-box" id="xtFinishControls">
+          <h3>🏁 FINALIZAR XTREINOS</h3>
+
+          <p class="notice">
+            O ADM pode finalizar somente um dia ou
+            encerrar a semana inteira.
+          </p>
+
+          <p class="notice">
+            Os resultados serão salvos no histórico.
+            As tabelas semanais serão reiniciadas,
+            mas a classificação geral continuará
+            acumulando todos os pontos.
+          </p>
+
+          <div class="finish-buttons">
+            <button type="button" data-finish="segunda">
+              📅 FINALIZAR SEGUNDA
+            </button>
+
+            <button type="button" data-finish="quarta">
+              📅 FINALIZAR QUARTA
+            </button>
+
+            <button type="button" data-finish="sexta">
+              📅 FINALIZAR SEXTA
+            </button>
+
+            <button
+              type="button"
+              class="danger"
+              data-finish="semana"
+            >
+              🏁 FINALIZAR SEMANA
+            </button>
+          </div>
+
+          <p id="xtFinishInfo" class="notice">
+            A finalização exige confirmação do administrador.
+          </p>
+        </section>
 
         <div style="margin-top:20px">
           <button
@@ -557,6 +649,7 @@
             SAIR DO PAINEL
           </button>
         </div>
+
       </div>
 
       <p id="xtMessage" class="notice" role="status"></p>
@@ -573,4 +666,3 @@
 
 </body>
 </html>
-
