@@ -1,11 +1,13 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+
 import {
   getAuth,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+
 import {
   getFirestore,
   collection,
@@ -18,9 +20,11 @@ import {
   deleteDoc,
   onSnapshot,
   serverTimestamp,
-  writeBatch
+  writeBatch,
+  runTransaction
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
+// CONFIGURAÇÃO FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyBX6hLTNoeD9LhcUv-lG3qqW69MbJdGQN8",
   authDomain: "demon-slayer-xtreino-e81b7.firebaseapp.com",
@@ -30,6 +34,7 @@ const firebaseConfig = {
   appId: "1:545991125458:web:e9bdb3322edad31907800b"
 };
 
+// UID DA CONTA ADMINISTRADORA
 const ADMIN_UID = "tadNQeNTUQMGd5UTqT9HdnlTnfk2";
 
 const app = initializeApp(firebaseConfig);
@@ -38,8 +43,8 @@ const db = getFirestore(app);
 
 const DEFAULT_RULES =
   "Sem cavalo. Carros apenas para locomoção. " +
-  "Proibido marcar na loja. 4 quedas: Bermuda, " +
-  "Purgatório, Kalahari e Nova Terra. " +
+  "Proibido marcar na loja. " +
+  "4 quedas: Bermuda, Purgatório, Kalahari e Nova Terra. " +
   "Pontuação LBFF 2021. Sem trapaças. " +
   "Apenas 1 emulador por equipe.";
 
@@ -67,9 +72,11 @@ function clean(value, max = 60) {
 
 function validateScore(value) {
   const n = Number(value);
+
   if (!Number.isInteger(n) || n < 0 || n > 10000) {
     throw Error("Pontuação inválida.");
   }
+
   return n;
 }
 
@@ -80,9 +87,28 @@ function toTeam(snapshot) {
   };
 }
 
+function sortedRanking(teams) {
+  return teams
+    .filter(t => t.status === "approved")
+    .sort((a, b) =>
+      (Number(b.points) || 0) - (Number(a.points) || 0) ||
+      (Number(b.kills) || 0) - (Number(a.kills) || 0)
+    )
+    .map((team, index) => ({
+      team: team.team,
+      status: team.status,
+      position: index + 1,
+      placement: Number(team.placement) || 0,
+      kills: Number(team.kills) || 0,
+      points: Number(team.points) || 0
+    }));
+}
+
 const XT = {
+
   isAdmin,
 
+  // LOGIN ADM
   watchAuth(callback) {
     return onAuthStateChanged(auth, user => {
       callback(Boolean(user && user.uid === ADMIN_UID));
@@ -92,7 +118,7 @@ const XT = {
   async login(email, password) {
     const result = await signInWithEmailAndPassword(
       auth,
-      email.trim(),
+      String(email).trim(),
       password
     );
 
@@ -109,6 +135,7 @@ const XT = {
     return { ok: true };
   },
 
+  // DADOS PÚBLICOS EM TEMPO REAL
   watchPublic(callback, onError) {
     const data = {
       config: { ...DEFAULT_CONFIG },
@@ -162,6 +189,7 @@ const XT = {
     return () => unsubscribers.forEach(fn => fn());
   },
 
+  // INSCRIÇÕES VISÍVEIS SOMENTE AO ADM
   watchRegistrations(callback, onError) {
     requireAdmin();
 
@@ -170,6 +198,7 @@ const XT = {
     }, onError);
   },
 
+  // CADASTRAR EQUIPE
   async register(team) {
     const required = [
       "name", "captain", "phone",
@@ -180,6 +209,7 @@ const XT = {
 
     for (const key of required) {
       cleaned[key] = clean(team[key], 50);
+
       if (!cleaned[key]) {
         throw Error("Preencha todos os campos obrigatórios.");
       }
@@ -193,7 +223,8 @@ const XT = {
 
     if (
       logo.length > 80000 ||
-      (logo && !/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(logo))
+      (logo &&
+        !/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(logo))
     ) {
       throw Error("Logo inválida ou muito grande.");
     }
@@ -228,9 +259,13 @@ const XT = {
       createdAt: serverTimestamp()
     });
 
-    return { ok: true };
+    return {
+      ok: true,
+      message: "Inscrição enviada com sucesso!"
+    };
   },
 
+  // APROVAR, RESERVAR OU RECUSAR
   async setStatus(id, status) {
     requireAdmin();
 
@@ -247,6 +282,25 @@ const XT = {
 
     const team = snap.data();
     const publicRef = doc(db, "publicTeams", id);
+
+    if (status === "approved") {
+      const configSnap = await getDoc(doc(db, "settings", "xt"));
+      const capacity = Number(
+        configSnap.exists()
+          ? configSnap.data().capacity
+          : DEFAULT_CONFIG.capacity
+      );
+
+      const publicSnap = await getDocs(col("publicTeams"));
+
+      const approved = publicSnap.docs.filter(s =>
+        s.id !== id && s.data().status === "approved"
+      ).length;
+
+      if (approved >= capacity) {
+        throw Error("Todas as vagas confirmadas estão ocupadas.");
+      }
+    }
 
     const batch = writeBatch(db);
     batch.update(ref, { status });
@@ -268,9 +322,11 @@ const XT = {
     }
 
     await batch.commit();
+
     return { ok: true };
   },
 
+  // SALVAR PONTUAÇÃO
   async saveScore(id, placement, kills, points) {
     requireAdmin();
 
@@ -290,17 +346,21 @@ const XT = {
     return { ok: true };
   },
 
+  // EXCLUIR EQUIPE
   async deleteTeam(id) {
     requireAdmin();
 
     const batch = writeBatch(db);
+
     batch.delete(doc(db, "registrations", id));
     batch.delete(doc(db, "publicTeams", id));
+
     await batch.commit();
 
     return { ok: true };
   },
 
+  // CONFIGURAÇÕES DO XT
   async saveConfig(config) {
     requireAdmin();
 
@@ -330,6 +390,7 @@ const XT = {
     return { ok: true };
   },
 
+  // PARCERIAS
   async savePartner(partner) {
     requireAdmin();
 
@@ -367,23 +428,47 @@ const XT = {
 
   async deletePartner(id) {
     requireAdmin();
+
     await deleteDoc(doc(db, "partners", id));
+
     return { ok: true };
   },
 
+  // RANKING DO XT ATUAL
+  async getRanking() {
+    const snap = await getDocs(col("publicTeams"));
+    return sortedRanking(snap.docs.map(toTeam));
+  },
+
+  // HISTÓRICO DE CAMPEONATOS
+  async getHistory() {
+    const snap = await getDocs(col("history"));
+
+    return snap.docs
+      .map(toTeam)
+      .sort((a, b) => {
+        const ta = a.finishedAt?.toMillis?.() || 0;
+        const tb = b.finishedAt?.toMillis?.() || 0;
+        return tb - ta;
+      });
+  },
+
+  // FINALIZAR XTREINO
   async finish(confirmText) {
     requireAdmin();
 
     if (confirmText !== "FINALIZAR XT") {
-      throw Error("Digite FINALIZAR XT.");
+      throw Error("Digite FINALIZAR XT para confirmar.");
     }
 
-    const registrations = await getDocs(col("registrations"));
-    const teams = await getDocs(col("publicTeams"));
-    const configSnap = await getDoc(doc(db, "settings", "xt"));
+    const [registrations, teams, configSnap] = await Promise.all([
+      getDocs(col("registrations")),
+      getDocs(col("publicTeams")),
+      getDoc(doc(db, "settings", "xt"))
+    ]);
 
     if (registrations.empty && teams.empty) {
-      throw Error("Nenhuma equipe cadastrada.");
+      throw Error("Nenhuma equipe cadastrada para finalizar.");
     }
 
     const config = {
@@ -391,46 +476,108 @@ const XT = {
       ...(configSnap.exists() ? configSnap.data() : {})
     };
 
-    const ranking = teams.docs
-      .map(s => ({
-        team: s.data().team,
-        status: s.data().status,
-        placement: Number(s.data().placement) || 0,
-        kills: Number(s.data().kills) || 0,
-        points: Number(s.data().points) || 0
-      }))
-      .filter(t => t.status === "approved")
-      .sort((a, b) =>
-        b.points - a.points || b.kills - a.kills
+    const currentTeams = teams.docs.map(toTeam);
+    const ranking = sortedRanking(currentTeams);
+
+    const reserves = currentTeams
+      .filter(t => t.status === "reserve")
+      .map(t => ({
+        team: t.team,
+        status: "reserve",
+        position: 0,
+        placement: Number(t.placement) || 0,
+        kills: Number(t.kills) || 0,
+        points: Number(t.points) || 0
+      }));
+
+    const operations = registrations.size + teams.size + 2;
+
+    if (operations > 500) {
+      throw Error(
+        "Há muitas inscrições para finalizar em uma única operação."
       );
+    }
 
     const batch = writeBatch(db);
-
     const historyRef = doc(col("history"));
 
+    // 1. SALVAR HISTÓRICO
     batch.set(historyRef, {
       event: config.event,
       finishedAt: serverTimestamp(),
       teamsCount: ranking.length,
-      ranking
+      registrationsCount: registrations.size,
+      ranking: [...ranking, ...reserves]
     });
 
-    registrations.docs.forEach(s => batch.delete(s.ref));
-    teams.docs.forEach(s => batch.delete(s.ref));
+    // 2. REMOVER TODAS AS INSCRIÇÕES
+    registrations.docs.forEach(s => {
+      batch.delete(s.ref);
+    });
 
-    if (registrations.size + teams.size + 1 > 500) {
-      throw Error("Muitas equipes para finalizar em uma operação.");
-    }
+    // 3. REMOVER CONFIRMADAS E RESERVAS
+    teams.docs.forEach(s => {
+      batch.delete(s.ref);
+    });
 
+    // 4. LIBERAR AS 12 VAGAS
+    batch.set(doc(db, "settings", "xt"), {
+      event: config.event,
+      capacity: 12,
+      rules: config.rules || DEFAULT_RULES
+    });
+
+    // 5. CONFIRMAR TUDO JUNTO
     await batch.commit();
 
     return {
       ok: true,
       removed: teams.size,
-      message: "XT finalizado! Histórico salvo e vagas liberadas."
+      registrationsRemoved: registrations.size,
+      availableSlots: 12,
+      historyId: historyRef.id,
+      message:
+        "XT FINALIZADO COM SUCESSO! " +
+        "Histórico salvo e 12 vagas liberadas."
     };
+  },
+
+  // EXPORTAR BACKUP
+  async exportBackup() {
+    requireAdmin();
+
+    const [
+      registrations,
+      teams,
+      history,
+      partners,
+      settings
+    ] = await Promise.all([
+      getDocs(col("registrations")),
+      getDocs(col("publicTeams")),
+      getDocs(col("history")),
+      getDocs(col("partners")),
+      getDoc(doc(db, "settings", "xt"))
+    ]);
+
+    return JSON.stringify({
+      exportedAt: new Date().toISOString(),
+      config: settings.exists()
+        ? settings.data()
+        : DEFAULT_CONFIG,
+      registrations: registrations.docs.map(toTeam),
+      teams: teams.docs.map(toTeam),
+      history: history.docs.map(toTeam),
+      partners: partners.docs.map(toTeam)
+    }, (key, value) => {
+      if (value && typeof value.toDate === "function") {
+        return value.toDate().toISOString();
+      }
+      return value;
+    }, 2);
   }
 };
 
 export default XT;
+
 
