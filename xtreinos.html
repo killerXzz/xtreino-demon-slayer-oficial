@@ -2,667 +2,559 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#090910">
-  <title>XTREINOS | DEMꓳN SLꓥYER</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#100609">
+<title>XTREINOS | DEMꓳN SLꓥYER</title>
 
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg: #090910;
-      --panel: #15131f;
-      --panel2: #201b2d;
-      --border: #393046;
-      --purple: #b58aff;
-      --text: #f5f4ff;
-      --muted: #bbb3cb;
-      --green: #86efac;
-      --red: #a62b50;
-    }
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0b0608;
+  --panel: #180c10;
+  --panel2: #291217;
+  --border: #63232e;
+  --purple: #ff404d;
+  --text: #fff5f5;
+  --muted: #d1aeb4;
+  --green: #86efac;
+  --red: #b51d30;
+}
 
-    * {
-      box-sizing: border-box;
-    }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 
-    html {
-      scroll-behavior: smooth;
-    }
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Inter, Arial, sans-serif;
+  color: var(--text);
+  background:
+    linear-gradient(rgba(10,4,6,.86),rgba(10,4,6,.97)),
+    url("./tanjiro.png") center top / cover fixed,
+    var(--bg);
+}
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: Inter, Arial, sans-serif;
-      color: var(--text);
-      background:
-        linear-gradient(
-          rgba(9, 9, 16, 0.82),
-          rgba(9, 9, 16, 0.95)
-        ),
-        url("./tanjiro.png") center top / cover fixed,
-        var(--bg);
-    }
+header {
+  text-align: center;
+  padding: 25px 20px;
+  background: rgba(18,5,9,.95);
+  border-bottom: 1px solid #8b2735;
+}
 
-    header {
-      border-bottom: 1px solid var(--border);
-      background: rgba(9, 9, 16, 0.9);
-      padding: 24px 20px;
-      text-align: center;
-    }
+.brand {
+  margin: 0;
+  font-size: clamp(25px,5vw,42px);
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #ff404d;
+  text-shadow: 0 0 22px rgba(220,25,48,.5);
+}
 
-    .brand {
-      font-size: clamp(24px, 5vw, 40px);
-      font-weight: 900;
-      letter-spacing: 2px;
-      color: var(--purple);
-      margin: 0;
-    }
+.subtitle {
+  color: var(--muted);
+  margin-top: 10px;
+}
 
-    .subtitle {
-      color: var(--muted);
-      margin-top: 10px;
-    }
+nav {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
 
-    nav {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 22px;
-    }
+nav a {
+  text-decoration: none;
+  color: white;
+  background: #291217;
+  border: 1px solid #63232e;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+}
 
-    nav a {
-      text-decoration: none;
-      color: white;
-      border: 1px solid var(--border);
-      background: var(--panel2);
-      padding: 12px 20px;
-      border-radius: 12px;
-      font-weight: bold;
-    }
+nav a.active, nav a:hover {
+  background: #c51e34;
+  border-color: #ff404d;
+}
 
-    nav a.active,
-    nav a:hover {
-      background: #7045bd;
-      border-color: var(--purple);
-    }
+main {
+  width: min(1100px,94%);
+  margin: 32px auto;
+}
 
-    main {
-      width: min(1100px, 94%);
-      margin: 32px auto;
-    }
+.hero {
+  text-align: center;
+  padding: 35px 20px;
+  border: 1px solid #63232e;
+  border-radius: 18px;
+  background: rgba(24,9,14,.95);
+  margin-bottom: 25px;
+}
 
-    .hero {
-      text-align: center;
-      padding: 35px 20px;
-      border-radius: 18px;
-      border: 1px solid var(--border);
-      background: rgba(21, 19, 31, 0.94);
-      margin-bottom: 25px;
-    }
+.hero h2 {
+  color: #ff404d;
+  font-size: clamp(24px,5vw,36px);
+  margin: 0 0 12px;
+}
 
-    .hero h2 {
-      margin: 0 0 12px;
-      font-size: clamp(24px, 5vw, 36px);
-      color: var(--purple);
-    }
+.hero p, .notice {
+  color: var(--muted);
+  line-height: 1.7;
+}
 
-    .hero p {
-      color: var(--muted);
-      line-height: 1.7;
-    }
+.section {
+  padding: 22px;
+  background: rgba(24,10,15,.96);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  margin-bottom: 24px;
+}
 
-    .section {
-      background: rgba(21, 19, 31, 0.95);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 22px;
-      margin-bottom: 24px;
-    }
+.section h2 { margin: 0 0 18px; }
 
-    .section h2 {
-      margin: 0 0 18px;
-      font-size: 23px;
-    }
+.days {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
 
-    .days {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-      margin-bottom: 24px;
-    }
+.day {
+  text-align: center;
+  padding: 22px 12px;
+  background: rgba(43,15,22,.96);
+  border: 1px solid #792635;
+  border-radius: 15px;
+}
 
-    .day {
-      padding: 22px 12px;
-      border-radius: 15px;
-      background: rgba(32, 27, 45, 0.95);
-      border: 1px solid var(--border);
-      text-align: center;
-    }
+.day strong {
+  display: block;
+  color: #ff4654;
+  font-size: 20px;
+  margin-bottom: 8px;
+}
 
-    .day strong {
-      display: block;
-      font-size: 20px;
-      color: var(--purple);
-      margin-bottom: 8px;
-    }
+.day span {
+  font-size: 13px;
+  color: var(--muted);
+}
 
-    .day span {
-      font-size: 13px;
-      color: var(--muted);
-    }
+.maps {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
 
-    .table-scroll {
-      overflow-x: auto;
-    }
+.map-pill {
+  background: #291217;
+  border: 1px solid #63232e;
+  border-radius: 30px;
+  padding: 9px 12px;
+  color: var(--muted);
+  font-size: 12px;
+}
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 580px;
-    }
+.table-scroll, .item { overflow-x: auto; }
 
-    th, td {
-      padding: 13px 12px;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-    }
+table {
+  width: 100%;
+  min-width: 580px;
+  border-collapse: collapse;
+}
 
-    th {
-      color: var(--purple);
-      font-size: 13px;
-      text-transform: uppercase;
-    }
+th, td {
+  padding: 13px 12px;
+  text-align: left;
+  border-bottom: 1px solid #63232e;
+}
 
-    td {
-      font-size: 14px;
-    }
+th {
+  color: #ff4654;
+  text-transform: uppercase;
+  font-size: 13px;
+}
 
-    tbody tr:hover {
-      background: rgba(181, 138, 255, 0.07);
-    }
+td { font-size: 14px; }
 
-    .item {
-      padding: 20px;
-      background: var(--panel2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      margin-bottom: 15px;
-      overflow-x: auto;
-    }
+tbody tr:hover {
+  background: rgba(255,60,75,.09);
+}
 
-    .item h3 {
-      color: var(--purple);
-      margin-top: 0;
-    }
+.item {
+  padding: 20px;
+  margin-bottom: 15px;
+  background: #291217;
+  border: 1px solid #63232e;
+  border-radius: 14px;
+}
 
-    .item p {
-      color: var(--muted);
-    }
+.item h3 {
+  color: #ff4654;
+  margin-top: 0;
+}
 
-    .item table {
-      min-width: 420px;
-    }
+.item p { color: var(--muted); }
+.item table { min-width: 420px; }
 
-    .admin-box {
-      border: 1px solid #644497;
-      background: rgba(30, 22, 45, 0.97);
-    }
+.admin-box {
+  background: rgba(36,10,17,.97);
+  border-color: #a12c3b;
+}
 
-    .hide {
-      display: none !important;
-    }
+.hide { display: none !important; }
 
-    form {
-      display: grid;
-      gap: 15px;
-    }
+form {
+  display: grid;
+  gap: 15px;
+}
 
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 15px;
-    }
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 15px;
+}
 
-    label {
-      display: grid;
-      gap: 7px;
-      color: var(--muted);
-      font-size: 14px;
-      font-weight: 600;
-    }
+label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
 
-    input, select {
-      width: 100%;
-      min-width: 0;
-      border: 1px solid var(--border);
-      background: #0e0c16;
-      color: white;
-      padding: 13px;
-      border-radius: 10px;
-      font: inherit;
-    }
+input, select {
+  width: 100%;
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid #63232e;
+  border-radius: 10px;
+  background: #12080b;
+  color: white;
+  font: inherit;
+}
 
-    input:focus, select:focus {
-      outline: 2px solid var(--purple);
-    }
+input:focus, select:focus {
+  outline: 2px solid #ff404d;
+}
 
-    button {
-      border: 0;
-      border-radius: 10px;
-      background: #7045bd;
-      color: white;
-      padding: 13px 18px;
-      font-weight: 700;
-      font-size: 14px;
-      cursor: pointer;
-    }
+button {
+  padding: 13px 18px;
+  border: 0;
+  border-radius: 10px;
+  background: #c51e34;
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
 
-    button:hover {
-      filter: brightness(1.15);
-    }
+button:hover { background: #e12b43; }
+button:disabled { opacity: .5; cursor: not-allowed; }
 
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+.secondary { background: #48242b; }
+.danger { background: #a51026; }
 
-    .secondary {
-      background: #393046;
-    }
+.notice {
+  font-size: 14px;
+  margin-top: 12px;
+}
 
-    .danger {
-      background: var(--red);
-    }
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 18px 0;
+}
 
-    .notice {
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.7;
-      margin-top: 12px;
-    }
+.tabs button {
+  flex: 1;
+  min-width: 125px;
+  border: 1px solid #b62b3e !important;
+}
 
-    .maps {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 16px;
-    }
+/* Mantém os botões criados pelo JavaScript em vermelho */
+#xtDayTabs button,
+#xtModeTabs button {
+  border-color: #b62b3e !important;
+}
 
-    .map-pill {
-      padding: 9px 12px;
-      border: 1px solid var(--border);
-      border-radius: 30px;
-      background: var(--panel2);
-      color: var(--muted);
-      font-size: 12px;
-    }
+#xtDayTabs button:hover,
+#xtModeTabs button:hover {
+  background: #c51e34 !important;
+}
 
-    .tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 18px 0;
-    }
+.finish-box {
+  padding: 20px;
+  margin-top: 25px;
+  background: #270e15;
+  border: 1px solid #a12c3b;
+  border-radius: 14px;
+}
 
-    .tabs button {
-      flex: 1;
-      min-width: 125px;
-      border: 1px solid #7045bd;
-    }
+.finish-buttons {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 12px;
+  margin-top: 18px;
+}
 
-    .finish-box {
-      padding: 20px;
-      margin-top: 25px;
-      background: #1b1528;
-      border: 1px solid #8053ae;
-      border-radius: 14px;
-    }
+.finish-buttons button { min-height: 50px; }
 
-    .finish-buttons {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin-top: 18px;
-    }
+footer {
+  padding: 30px 15px;
+  text-align: center;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+}
 
-    .finish-buttons button {
-      min-height: 50px;
-    }
+@media(max-width:650px) {
+  .days, .form-grid, .finish-buttons {
+    grid-template-columns: 1fr;
+  }
 
-    footer {
-      padding: 30px 15px;
-      text-align: center;
-      color: var(--muted);
-      border-top: 1px solid var(--border);
-    }
-
-    @media (max-width: 650px) {
-      .days,
-      .form-grid,
-      .finish-buttons {
-        grid-template-columns: 1fr;
-      }
-
-      .section {
-        padding: 16px;
-      }
-
-      main {
-        width: 96%;
-      }
-
-      nav a {
-        flex: 1;
-        text-align: center;
-      }
-
-      .hero {
-        padding: 24px 14px;
-      }
-
-      body {
-        background-attachment: scroll;
-      }
-    }
-  </style>
+  .section { padding: 16px; }
+  main { width: 96%; }
+  nav a { flex: 1; text-align: center; }
+  .hero { padding: 24px 14px; }
+  body { background-attachment: scroll; }
+}
+</style>
 </head>
 
 <body>
 
-  <header>
-    <h1 class="brand">DEMꓳN SLꓥYER</h1>
+<header>
+  <h1 class="brand">DEMꓳN SLꓥYER</h1>
+  <p class="subtitle">
+    SISTEMA OFICIAL DE XTREINOS E CLASSIFICAÇÃO
+  </p>
 
-    <p class="subtitle">
-      SISTEMA OFICIAL DE XTREINOS E CLASSIFICAÇÃO
+  <nav>
+    <a href="./index.html">📝 INSCRIÇÕES</a>
+    <a href="./xtreinos.html" class="active">🏆 XTREINOS</a>
+    <a href="#rankingSection">📊 TABELAS</a>
+    <a href="#adminSection">🔐 ÁREA ADM</a>
+  </nav>
+</header>
+
+<main>
+
+  <section class="hero">
+    <h2>🏆 XTREINOS DEMꓳN SLꓥYER</h2>
+    <p>
+      Acompanhe as tabelas de segunda, quarta e sexta-feira,
+      a classificação semanal e o ranking geral acumulado
+      de todas as semanas.
     </p>
 
-    <nav>
-      <a href="./index.html">
-        📝 INSCRIÇÕES
-      </a>
+    <div class="maps">
+      <span class="map-pill">🗺️ Bermuda</span>
+      <span class="map-pill">🗺️ Purgatório</span>
+      <span class="map-pill">🗺️ Kalahari</span>
+      <span class="map-pill">🗺️ Nova Terra</span>
+    </div>
+  </section>
 
-      <a href="./xtreinos.html" class="active">
-        🏆 XTREINOS
-      </a>
+  <div class="days">
+    <div class="day">
+      <strong>SEGUNDA</strong>
+      <span>4 QUEDAS • LBFF 2021</span>
+    </div>
+    <div class="day">
+      <strong>QUARTA</strong>
+      <span>4 QUEDAS • LBFF 2021</span>
+    </div>
+    <div class="day">
+      <strong>SEXTA</strong>
+      <span>4 QUEDAS • LBFF 2021</span>
+    </div>
+  </div>
 
-      <a href="#rankingSection">
-        📊 TABELAS
-      </a>
+  <section class="section" id="rankingSection">
+    <h2>🥇 RANKING DAS EQUIPES</h2>
+    <p class="notice">
+      Escolha o dia e o tipo de classificação.
+      A tabela semanal pode ser reiniciada pelo ADM.
+      A classificação geral mantém os pontos das semanas anteriores.
+    </p>
 
-      <a href="#adminSection">
-        🔐 ÁREA ADM
-      </a>
-    </nav>
-  </header>
+    <div id="xtDayTabs" class="tabs"></div>
+    <div id="xtModeTabs" class="tabs"></div>
 
-  <main>
+    <div class="table-scroll" id="ranking">
+      <p>Carregando classificação...</p>
+    </div>
+  </section>
 
-    <section class="hero">
-      <h2>🏆 XTREINOS DEMꓳN SLꓥYER</h2>
+  <section class="section" id="historySection">
+    <h2>📋 RESULTADOS E HISTÓRICO</h2>
+    <p class="notice">
+      Consulte as quedas, colocações, abates e pontuações.
+      Selecione HISTÓRICO acima para consultar os
+      resultados arquivados das semanas anteriores.
+    </p>
 
-      <p>
-        Acompanhe as tabelas de segunda, quarta e sexta-feira,
-        a classificação semanal e o ranking geral acumulado
-        de todas as semanas.
-      </p>
+    <div id="matchHistory">
+      <p>Carregando resultados...</p>
+    </div>
+  </section>
 
-      <div class="maps">
-        <span class="map-pill">🗺️ Bermuda</span>
-        <span class="map-pill">🗺️ Purgatório</span>
-        <span class="map-pill">🗺️ Kalahari</span>
-        <span class="map-pill">🗺️ Nova Terra</span>
-      </div>
-    </section>
+  <section class="section admin-box" id="adminSection">
+    <h2>🔐 PAINEL ADMINISTRATIVO</h2>
+    <p class="notice">
+      Acesso exclusivo da organização para cadastrar
+      resultados, finalizar XTREINOS e gerenciar tabelas.
+    </p>
 
-    <div class="days">
-      <div class="day">
-        <strong>SEGUNDA</strong>
-        <span>4 QUEDAS • LBFF 2021</span>
-      </div>
+    <div id="xtLoginBox">
+      <form id="xtLoginForm">
+        <label>
+          E-mail do administrador
+          <input type="email" id="xtEmail"
+            autocomplete="username"
+            placeholder="Digite seu e-mail" required>
+        </label>
 
-      <div class="day">
-        <strong>QUARTA</strong>
-        <span>4 QUEDAS • LBFF 2021</span>
-      </div>
+        <label>
+          Senha
+          <input type="password" id="xtPassword"
+            autocomplete="current-password"
+            placeholder="Digite sua senha" required>
+        </label>
 
-      <div class="day">
-        <strong>SEXTA</strong>
-        <span>4 QUEDAS • LBFF 2021</span>
-      </div>
+        <button type="submit">ENTRAR COMO ADM</button>
+      </form>
     </div>
 
-    <section class="section" id="rankingSection">
-      <h2>🥇 RANKING DAS EQUIPES</h2>
-
+    <div id="xtAdminPanel" class="hide">
+      <h3>⚙️ GERENCIAR RESULTADOS</h3>
       <p class="notice">
-        Escolha o dia e o tipo de classificação.
-        A tabela semanal pode ser reiniciada pelo ADM.
-        A classificação geral mantém os pontos das semanas anteriores.
+        Registre a colocação e os abates de cada equipe.
+        A pontuação LBFF 2021 será calculada automaticamente.
       </p>
 
-      <div id="xtDayTabs" class="tabs"></div>
-
-      <div id="xtModeTabs" class="tabs"></div>
-
-      <div class="table-scroll" id="ranking">
-        <p>Carregando classificação...</p>
-      </div>
-    </section>
-
-    <section class="section" id="historySection">
-      <h2>📋 RESULTADOS E HISTÓRICO</h2>
-
-      <p class="notice">
-        Consulte as quedas, colocações, abates e pontuações.
-        Selecione HISTÓRICO acima para consultar
-        os resultados arquivados das semanas anteriores.
-      </p>
-
-      <div id="matchHistory">
-        <p>Carregando resultados...</p>
-      </div>
-    </section>
-
-    <section class="section admin-box" id="adminSection">
-      <h2>🔐 PAINEL ADMINISTRATIVO</h2>
-
-      <p class="notice">
-        Acesso exclusivo da organização para cadastrar
-        resultados, finalizar XTREINOS e gerenciar as tabelas.
-      </p>
-
-      <div id="xtLoginBox">
-        <form id="xtLoginForm">
+      <form id="xtResultForm">
+        <div class="form-grid">
 
           <label>
-            E-mail do administrador
-            <input
-              type="email"
-              id="xtEmail"
-              autocomplete="username"
-              placeholder="Digite seu e-mail"
-              required
-            >
+            Data do XTREINO
+            <input type="date" id="matchDate" required>
           </label>
 
           <label>
-            Senha
-            <input
-              type="password"
-              id="xtPassword"
-              autocomplete="current-password"
-              placeholder="Digite sua senha"
-              required
-            >
+            Dia do XTREINO
+            <select id="matchDay" required>
+              <option value="segunda">Segunda-feira</option>
+              <option value="quarta">Quarta-feira</option>
+              <option value="sexta">Sexta-feira</option>
+            </select>
           </label>
 
-          <button type="submit">
-            ENTRAR COMO ADM
-          </button>
+          <label>
+            Queda / Mapa
+            <select id="matchRound" required>
+              <option value="1">1ª — Bermuda</option>
+              <option value="2">2ª — Purgatório</option>
+              <option value="3">3ª — Kalahari</option>
+              <option value="4">4ª — Nova Terra</option>
+            </select>
+          </label>
 
-        </form>
-      </div>
+          <label>
+            Equipe
+            <select id="teamSelect" required>
+              <option value="">Carregando equipes...</option>
+            </select>
+          </label>
 
-      <div id="xtAdminPanel" class="hide">
+          <label>
+            Colocação
+            <select id="matchPosition" required>
+              <option value="1">1º lugar</option>
+              <option value="2">2º lugar</option>
+              <option value="3">3º lugar</option>
+              <option value="4">4º lugar</option>
+              <option value="5">5º lugar</option>
+              <option value="6">6º lugar</option>
+              <option value="7">7º lugar</option>
+              <option value="8">8º lugar</option>
+              <option value="9">9º lugar</option>
+              <option value="10">10º lugar</option>
+              <option value="11">11º lugar</option>
+              <option value="12">12º lugar</option>
+            </select>
+          </label>
 
-        <h3>⚙️ GERENCIAR RESULTADOS</h3>
+          <label>
+            Quantidade de abates
+            <input type="number" id="matchKills"
+              min="0" max="100" value="0" required>
+          </label>
+        </div>
 
+        <button type="submit">💾 SALVAR RESULTADO</button>
+      </form>
+
+      <p class="notice">
+        Para corrigir uma pontuação, selecione novamente
+        a mesma data, queda e equipe. O resultado anterior
+        será substituído se ainda não estiver finalizado.
+      </p>
+
+      <section class="finish-box" id="xtFinishControls">
+        <h3>🏁 FINALIZAR XTREINOS</h3>
         <p class="notice">
-          Registre a colocação e os abates de cada equipe.
-          A pontuação LBFF 2021 será calculada automaticamente.
+          O ADM pode finalizar um dia ou encerrar
+          a semana inteira.
+        </p>
+        <p class="notice">
+          Os resultados serão salvos no histórico.
+          As tabelas semanais serão reiniciadas,
+          mas a classificação geral continuará
+          acumulando todos os pontos.
         </p>
 
-        <form id="xtResultForm">
-
-          <div class="form-grid">
-
-            <label>
-              Data do XTREINO
-              <input
-                type="date"
-                id="matchDate"
-                required
-              >
-            </label>
-
-            <label>
-              Dia do XTREINO
-              <select id="matchDay" required>
-                <option value="segunda">Segunda-feira</option>
-                <option value="quarta">Quarta-feira</option>
-                <option value="sexta">Sexta-feira</option>
-              </select>
-            </label>
-
-            <label>
-              Queda / Mapa
-              <select id="matchRound" required>
-                <option value="1">1ª — Bermuda</option>
-                <option value="2">2ª — Purgatório</option>
-                <option value="3">3ª — Kalahari</option>
-                <option value="4">4ª — Nova Terra</option>
-              </select>
-            </label>
-
-            <label>
-              Equipe
-              <select id="teamSelect" required>
-                <option value="">Carregando equipes...</option>
-              </select>
-            </label>
-
-            <label>
-              Colocação
-              <select id="matchPosition" required>
-                <option value="1">1º lugar</option>
-                <option value="2">2º lugar</option>
-                <option value="3">3º lugar</option>
-                <option value="4">4º lugar</option>
-                <option value="5">5º lugar</option>
-                <option value="6">6º lugar</option>
-                <option value="7">7º lugar</option>
-                <option value="8">8º lugar</option>
-                <option value="9">9º lugar</option>
-                <option value="10">10º lugar</option>
-                <option value="11">11º lugar</option>
-                <option value="12">12º lugar</option>
-              </select>
-            </label>
-
-            <label>
-              Quantidade de abates
-              <input
-                type="number"
-                id="matchKills"
-                min="0"
-                max="100"
-                value="0"
-                required
-              >
-            </label>
-
-          </div>
-
-          <button type="submit">
-            💾 SALVAR RESULTADO
+        <div class="finish-buttons">
+          <button type="button" data-finish="segunda">
+            📅 FINALIZAR SEGUNDA
           </button>
-
-        </form>
-
-        <p class="notice">
-          Para corrigir uma pontuação, selecione novamente
-          a mesma data, queda e equipe.
-          O resultado anterior será substituído,
-          desde que a queda ainda não tenha sido finalizada.
-        </p>
-
-        <section class="finish-box" id="xtFinishControls">
-          <h3>🏁 FINALIZAR XTREINOS</h3>
-
-          <p class="notice">
-            O ADM pode finalizar somente um dia ou
-            encerrar a semana inteira.
-          </p>
-
-          <p class="notice">
-            Os resultados serão salvos no histórico.
-            As tabelas semanais serão reiniciadas,
-            mas a classificação geral continuará
-            acumulando todos os pontos.
-          </p>
-
-          <div class="finish-buttons">
-            <button type="button" data-finish="segunda">
-              📅 FINALIZAR SEGUNDA
-            </button>
-
-            <button type="button" data-finish="quarta">
-              📅 FINALIZAR QUARTA
-            </button>
-
-            <button type="button" data-finish="sexta">
-              📅 FINALIZAR SEXTA
-            </button>
-
-            <button
-              type="button"
-              class="danger"
-              data-finish="semana"
-            >
-              🏁 FINALIZAR SEMANA
-            </button>
-          </div>
-
-          <p id="xtFinishInfo" class="notice">
-            A finalização exige confirmação do administrador.
-          </p>
-        </section>
-
-        <div style="margin-top:20px">
-          <button
-            type="button"
-            class="secondary"
-            id="xtLogout"
-          >
-            SAIR DO PAINEL
+          <button type="button" data-finish="quarta">
+            📅 FINALIZAR QUARTA
+          </button>
+          <button type="button" data-finish="sexta">
+            📅 FINALIZAR SEXTA
+          </button>
+          <button type="button" class="danger" data-finish="semana">
+            🏁 FINALIZAR SEMANA
           </button>
         </div>
 
+        <p id="xtFinishInfo" class="notice">
+          A finalização exige confirmação do administrador.
+        </p>
+      </section>
+
+      <div style="margin-top:20px">
+        <button type="button" class="secondary" id="xtLogout">
+          SAIR DO PAINEL
+        </button>
       </div>
+    </div>
 
-      <p id="xtMessage" class="notice" role="status"></p>
-    </section>
+    <p id="xtMessage" class="notice" role="status"></p>
+  </section>
 
-  </main>
+</main>
 
-  <footer>
-    DEMꓳN SLꓥYER © 2026
-    <p>XTREINOS • CLASSIFICAÇÃO GERAL</p>
-  </footer>
+<footer>
+  DEMꓳN SLꓥYER © 2026
+  <p>XTREINOS • CLASSIFICAÇÃO GERAL</p>
+</footer>
 
-  <script type="module" src="./xtreinos.js"></script>
-
+<script type="module" src="./xtreinos.js"></script>
 </body>
 </html>
