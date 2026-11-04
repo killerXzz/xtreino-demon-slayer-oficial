@@ -5,8 +5,8 @@ export const firebaseConfig = {
   projectId: "demon-slayer-xtreino-e81b7",
   storageBucket: "demon-slayer-xtreino-e81b7.firebasestorage.app",
   messagingSenderId: "545991125458",
-  appId: "1:545991125458:web:e9bdb3322edad31907800b",
-  measurementId: "G-0H6S88RGGL"
+  appId: "1:545991125458:web:b545045a7e2840ca07800b",
+  measurementId: "G-282NX7FFD6"
 };
 
 
