@@ -517,3 +517,33 @@ alert(result.message);
 </script>
 </body>
 </html>
+
+body {
+  background:
+    linear-gradient(
+      rgba(5, 5, 15, 0.78),
+      rgba(5, 5, 15, 0.88)
+    ),
+    url("./tanjiro.png") center center / cover fixed no-repeat !important;
+
+  color: #ffffff;
+  min-height: 100vh;
+}
+
+header, main, section {
+  position: relative;
+}
+
+.card, .painel, .box {
+  background: rgba(12, 12, 25, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(150, 100, 255, 0.25);
+  border-radius: 14px;
+}
+
+@media (max-width: 768px) {
+  body {
+    background-attachment: scroll !important;
+    background-position: center top !important;
+  }
+}
