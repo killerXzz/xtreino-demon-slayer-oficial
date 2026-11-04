@@ -6,28 +6,23 @@ service cloud.firestore {
 
     function admin() {
       return request.auth != null
-        && request.auth.uid == "tadNQeNTUQMGd5UTqT9HdnlTnfk2";
-    }
-
-    function validLogo(logo) {
-      return logo is string
-        && logo.size() <= 80000
-        && (
-          logo == ""
-          || logo.matches('data:image/jpeg;base64,[A-Za-z0-9+/=]+')
-        );
+        && request.auth.uid == 'tadNQeNTUQMGd5UTqT9HdnlTnfk2'
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
     }
 
     function validRegistration() {
       let d = request.resource.data;
 
       return d.keys().hasOnly([
-        'team','leader','contact','rush','rush2',
-        'grenadier','support','logo','status','createdAt'
+        'team', 'leader', 'contact', 'rush',
+        'rush2', 'grenadier', 'support',
+        'logo', 'status', 'createdAt'
       ])
       && d.keys().hasAll([
-        'team','leader','contact','rush','rush2',
-        'grenadier','support','logo','status','createdAt'
+        'team', 'leader', 'contact', 'rush',
+        'rush2', 'grenadier', 'support',
+        'logo', 'status', 'createdAt'
       ])
       && d.team is string
       && d.team.size() > 0
@@ -40,76 +35,90 @@ service cloud.firestore {
       && d.contact.size() <= 25
       && d.rush is string
       && d.rush.size() > 0
-      && d.rush.size() <= 50
+      && d.rush.size() <= 40
       && d.rush2 is string
       && d.rush2.size() > 0
-      && d.rush2.size() <= 50
+      && d.rush2.size() <= 40
       && d.grenadier is string
       && d.grenadier.size() > 0
-      && d.grenadier.size() <= 50
+      && d.grenadier.size() <= 40
       && d.support is string
       && d.support.size() > 0
-      && d.support.size() <= 50
-      && validLogo(d.logo)
+      && d.support.size() <= 40
+      && d.logo is string
+      && d.logo.size() <= 80000
+      && (
+        d.logo == '' ||
+        d.logo.matches('data:image/jpeg;base64,[A-Za-z0-9+/=]+')
+      )
       && d.status == 'pending'
       && d.createdAt == request.time;
     }
 
     match /admins/{uid} {
-      allow get: if admin() && request.auth.uid == uid;
+      allow get: if request.auth != null
+        && request.auth.uid == uid;
+
       allow list, create, update, delete: if false;
     }
 
     match /registrations/{id} {
       allow create: if validRegistration();
+
       allow get, list: if admin();
 
       allow update: if admin()
         && request.resource.data.diff(resource.data)
           .affectedKeys().hasOnly(['status'])
-        && request.resource.data.status
-          in ['pending','approved','reserve','rejected'];
+        && request.resource.data.status in [
+          'pending', 'approved', 'reserve', 'rejected'
+        ];
 
       allow delete: if admin();
     }
 
     match /publicTeams/{id} {
-      allow read: if true;
+      allow get, list: if true;
 
       allow create, update: if admin()
-        && request.resource.data.keys().hasOnly([
-          'team','logo','status','placement','kills','points'
-        ])
         && request.resource.data.keys().hasAll([
-          'team','logo','status','placement','kills','points'
+          'team', 'logo', 'status',
+          'placement', 'kills', 'points'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'team', 'logo', 'status',
+          'placement', 'kills', 'points'
         ])
         && request.resource.data.team is string
-        && request.resource.data.team.size() > 0
         && request.resource.data.team.size() <= 50
-        && validLogo(request.resource.data.logo)
-        && request.resource.data.status in ['approved','reserve']
+        && request.resource.data.logo is string
+        && request.resource.data.logo.size() <= 80000
+        && request.resource.data.status in [
+          'approved', 'reserve'
+        ]
         && request.resource.data.placement is int
-        && request.resource.data.kills is int
-        && request.resource.data.points is int
         && request.resource.data.placement >= 0
-        && request.resource.data.kills >= 0
-        && request.resource.data.points >= 0
         && request.resource.data.placement <= 10000
+        && request.resource.data.kills is int
+        && request.resource.data.kills >= 0
         && request.resource.data.kills <= 10000
+        && request.resource.data.points is int
+        && request.resource.data.points >= 0
         && request.resource.data.points <= 10000;
 
       allow delete: if admin();
     }
 
     match /settings/xt {
-      allow read: if true;
+      allow get: if true;
+      allow list: if false;
 
       allow create, update: if admin()
-        && request.resource.data.keys().hasOnly([
-          'event','capacity','rules'
-        ])
         && request.resource.data.keys().hasAll([
-          'event','capacity','rules'
+          'event', 'capacity', 'rules'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'event', 'capacity', 'rules'
         ])
         && request.resource.data.event is string
         && request.resource.data.event.size() > 0
@@ -125,35 +134,35 @@ service cloud.firestore {
     }
 
     match /history/{id} {
-      allow read: if true;
+      allow get, list: if true;
 
       allow create: if admin()
-        && request.resource.data.keys().hasOnly([
-          'event','finishedAt','teamsCount','ranking'
-        ])
         && request.resource.data.keys().hasAll([
-          'event','finishedAt','teamsCount','ranking'
+          'event', 'finishedAt', 'teamsCount',
+          'registrationsCount', 'ranking'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'event', 'finishedAt', 'teamsCount',
+          'registrationsCount', 'ranking'
         ])
         && request.resource.data.event is string
-        && request.resource.data.event.size() <= 100
         && request.resource.data.finishedAt == request.time
         && request.resource.data.teamsCount is int
-        && request.resource.data.teamsCount >= 0
-        && request.resource.data.ranking is list
-        && request.resource.data.ranking.size() <= 100;
+        && request.resource.data.registrationsCount is int
+        && request.resource.data.ranking is list;
 
       allow update, delete: if false;
     }
 
     match /partners/{id} {
-      allow read: if true;
+      allow get, list: if true;
 
       allow create, update: if admin()
-        && request.resource.data.keys().hasOnly([
-          'name','description','url','logo'
-        ])
         && request.resource.data.keys().hasAll([
-          'name','description','url','logo'
+          'name', 'description', 'url', 'logo'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'name', 'description', 'url', 'logo'
         ])
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0
@@ -162,7 +171,8 @@ service cloud.firestore {
         && request.resource.data.description.size() <= 500
         && request.resource.data.url is string
         && request.resource.data.url.size() <= 500
-        && validLogo(request.resource.data.logo);
+        && request.resource.data.logo is string
+        && request.resource.data.logo.size() <= 80000;
 
       allow delete: if admin();
     }
