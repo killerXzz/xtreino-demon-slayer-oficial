@@ -5,19 +5,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DEMꓳN SLꓥYER | XTREINO</title>
+
 <style>
-:root{
-  font-family:Arial,sans-serif;
-  color-scheme:dark;
-  background:#090911;
-  color:#f8f4ff;
-  --accent:#c49aff;
+:root {
+  font-family: Arial, sans-serif;
+  color-scheme: dark;
+  background: #090911;
+  color: #f8f4ff;
+  --accent: #c49aff;
 }
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{
-  margin:0;
-  min-height:100vh;
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
   background:
     linear-gradient(
       90deg,
@@ -25,717 +27,1166 @@ body{
       rgba(7,8,19,.60)
     ),
     url("./tanjiro.png") center center/cover fixed no-repeat;
-  background-color:#090911;
+  background-color: #090911;
 }
-header{
-  position:sticky;
-  top:0;
-  z-index:5;
-  background:#10101df2;
-  border-bottom:1px solid #ffffff20;
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #10101df2;
+  border-bottom: 1px solid #ffffff20;
 }
-nav{
-  max-width:1150px;
-  margin:auto;
-  padding:18px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:15px;
-  flex-wrap:wrap;
+
+nav {
+  max-width: 1150px;
+  margin: auto;
+  padding: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
 }
-.brand{font-size:21px;font-weight:900;color:var(--accent)}
-.links{display:flex;gap:12px;flex-wrap:wrap}
-.links a{color:#ddd4e9;text-decoration:none;font-size:13px}
-.links a:hover{color:var(--accent)}
-main{max-width:1150px;margin:auto;padding:20px}
-section[id]{scroll-margin-top:110px}
-.hero{padding:65px 0}
-.hero h1{
-  font-size:clamp(42px,8vw,78px);
-  line-height:1.05;
-  text-shadow:0 5px 25px #000;
+
+.brand {
+  font-size: 21px;
+  font-weight: 900;
+  color: var(--accent);
 }
-.accent,.num{color:var(--accent)}
-.eyebrow{
-  color:var(--accent);
-  font-size:12px;
-  letter-spacing:2px;
-  font-weight:800;
+
+.links {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
 }
-p{color:#cfc8dd;line-height:1.6}
-.card,.stat,.slot,.partner{
-  background:rgba(19,17,35,.82);
-  backdrop-filter:blur(9px);
-  -webkit-backdrop-filter:blur(9px);
-  border:1px solid #ffffff25;
-  border-radius:16px;
-  padding:20px;
-  box-shadow:0 8px 30px #0003;
+
+.links a {
+  color: #ddd4e9;
+  text-decoration: none;
+  font-size: 13px;
 }
-.card{margin:25px 0}
-.stats,.grid,.slots,.partners{display:grid;gap:14px}
-.stats,.slots,.partners{grid-template-columns:repeat(3,1fr)}
-.grid{grid-template-columns:repeat(2,1fr)}
-.stat b{display:block;font-size:32px;color:var(--accent)}
-small,.tag{color:#c3a4e9;font-size:12px}
-button,.btn{
-  background:#8647d2;
-  border:0;
-  border-radius:10px;
-  padding:12px 18px;
-  color:white;
-  font-weight:800;
-  cursor:pointer;
-  text-decoration:none;
-  display:inline-block;
+
+.links a:hover { color: var(--accent); }
+
+.links .nav-ranking {
+  background: #8647d2;
+  color: #fff;
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-weight: 800;
 }
-button:hover,.btn:hover{filter:brightness(1.15)}
-button:disabled{opacity:.5;cursor:wait}
-.secondary{background:#373145}
-.danger{background:#a62b50}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
-label{display:block;font-size:13px;font-weight:700}
-input,textarea{
-  display:block;
-  width:100%;
-  margin-top:7px;
-  padding:12px;
-  background:#0c0c17;
-  color:white;
-  border:1px solid #51435e;
-  border-radius:9px;
-  font:inherit;
+
+main {
+  max-width: 1150px;
+  margin: auto;
+  padding: 20px;
 }
-input:focus,textarea:focus{
-  outline:2px solid #8647d2;
-  outline-offset:1px;
+
+section[id] { scroll-margin-top: 110px; }
+.hero { padding: 65px 0; }
+
+.hero h1 {
+  font-size: clamp(42px,8vw,78px);
+  line-height: 1.05;
+  text-shadow: 0 5px 25px #000;
 }
-textarea{min-height:115px}
-.slot{display:flex;gap:12px;align-items:center;min-height:85px}
-.slot img,.partner img{
-  width:58px;height:58px;
-  object-fit:cover;
-  border-radius:10px;
+
+.accent,.num { color: var(--accent); }
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 12px;
+  letter-spacing: 2px;
+  font-weight: 800;
 }
-.partner{text-align:center;overflow-wrap:anywhere}
-.partner img{width:85px;height:85px}
-.partner a{color:var(--accent)}
-.team{padding:18px 0;border-bottom:1px solid #ffffff25}
-table{width:100%;border-collapse:collapse}
-td,th{padding:12px;text-align:left;border-bottom:1px solid #ffffff20}
-th{color:var(--accent)}
-.table-wrap{overflow-x:auto}
-.hidden{display:none!important}
-.notice{color:#e6c4ff;white-space:pre-wrap}
-.admin-box{
-  background:rgba(28,23,41,.9);
-  border:1px solid #67458b;
-  padding:20px;
-  border-radius:14px;
-  margin:20px 0;
+
+p { color: #cfc8dd; line-height: 1.6; }
+
+.card,.stat,.slot,.partner {
+  background: rgba(19,17,35,.82);
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
+  border: 1px solid #ffffff25;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 8px 30px #0003;
 }
-.warning{border-color:#b52e59}
-footer{text-align:center;padding:30px;color:#c2b7d2}
-@media(max-width:750px){
-  body{
-    background-attachment:scroll;
-    background-position:center top;
+
+.card { margin: 25px 0; }
+
+.stats,.grid,.slots,.partners {
+  display: grid;
+  gap: 14px;
+}
+
+.stats,.slots,.partners {
+  grid-template-columns: repeat(3,1fr);
+}
+
+.grid { grid-template-columns: repeat(2,1fr); }
+
+.stat b {
+  display: block;
+  font-size: 32px;
+  color: var(--accent);
+}
+
+small,.tag {
+  color: #c3a4e9;
+  font-size: 12px;
+}
+
+button,.btn {
+  background: #8647d2;
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 18px;
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+button:hover,.btn:hover { filter: brightness(1.15); }
+button:disabled { opacity: .5; cursor: wait; }
+
+.secondary { background: #373145; }
+.danger { background: #a62b50; }
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+input,textarea {
+  display: block;
+  width: 100%;
+  margin-top: 7px;
+  padding: 12px;
+  background: #0c0c17;
+  color: white;
+  border: 1px solid #51435e;
+  border-radius: 9px;
+  font: inherit;
+}
+
+input:focus,textarea:focus {
+  outline: 2px solid #8647d2;
+  outline-offset: 1px;
+}
+
+textarea { min-height: 115px; }
+
+.slot {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-height: 85px;
+}
+
+.slot img,.partner img {
+  width: 58px;
+  height: 58px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.partner {
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.partner img {
+  width: 85px;
+  height: 85px;
+}
+
+.partner a { color: var(--accent); }
+
+.team {
+  padding: 18px 0;
+  border-bottom: 1px solid #ffffff25;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+td,th {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ffffff20;
+}
+
+th { color: var(--accent); }
+.table-wrap { overflow-x: auto; }
+.hidden { display: none!important; }
+.notice { color: #e6c4ff; white-space: pre-wrap; }
+
+.admin-box {
+  background: rgba(28,23,41,.9);
+  border: 1px solid #67458b;
+  padding: 20px;
+  border-radius: 14px;
+  margin: 20px 0;
+}
+
+.warning { border-color: #b52e59; }
+
+.xt-banner {
+  text-align: center;
+  border: 1px solid #8647d2;
+  background: rgba(35,20,60,.92);
+}
+
+.xt-banner h2 { color: var(--accent); }
+
+.xt-days {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.xt-day {
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #67458b;
+  background: #20182e;
+  font-weight: 800;
+}
+
+.xt-day span {
+  display: block;
+  margin-top: 7px;
+  color: #cfc8dd;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+footer {
+  text-align: center;
+  padding: 30px;
+  color: #c2b7d2;
+}
+
+@media(max-width:750px) {
+  body {
+    background-attachment: scroll;
+    background-position: center top;
   }
-  .stats,.slots,.partners{grid-template-columns:repeat(2,1fr)}
+
+  .stats,.slots,.partners {
+    grid-template-columns: repeat(2,1fr);
+  }
 }
-@media(max-width:520px){
-  .stats,.slots,.partners,.grid{grid-template-columns:1fr}
-  .card{padding:16px}
-  .hero{padding:45px 0}
+
+@media(max-width:520px) {
+  .stats,.slots,.partners,.grid,.xt-days {
+    grid-template-columns: 1fr;
+  }
+
+  .card { padding: 16px; }
+  .hero { padding: 45px 0; }
+  .links { gap: 10px; }
 }
 </style>
 </head>
+
 <body>
 
 <header>
 <nav>
-<div class="brand">⚔ DEMꓳN SLꓥYER</div>
-<div class="links">
-<a href="#inicio">Início</a>
-<a href="#inscricao">Inscrição</a>
-<a href="#slots">Equipes</a>
-<a href="#ranking">Ranking</a>
-<a href="#historico">Histórico</a>
-<a href="#parcerias">Parcerias</a>
-<a href="#regras">Regras</a>
-<a href="#adm">ADM</a>
-</div>
+  <div class="brand">⚔ DEMꓳN SLꓥYER</div>
+
+  <div class="links">
+    <a href="#inicio">Início</a>
+    <a href="#inscricao">Inscrição</a>
+    <a href="#slots">Equipes</a>
+    <a href="#parcerias">Parcerias</a>
+    <a href="#regras">Regras</a>
+    <a href="#adm">ADM</a>
+    <a class="nav-ranking" href="./xtreinos.html">
+      🏆 XTREINOS / TABELAS
+    </a>
+  </div>
 </nav>
 </header>
 
 <main>
+
 <section class="hero" id="inicio">
-<span class="eyebrow">FREE FIRE • XTREINO OFICIAL</span>
-<h1>DEMꓳN<br><span class="accent">SLꓥYER</span></h1>
-<p>Inscreva sua LINE, conquiste seu slot e domine o XT.</p>
-<div class="actions">
-<a class="btn" href="#inscricao">INSCREVER LINE</a>
-<a class="btn secondary" href="#slots">VER EQUIPES</a>
-</div>
+  <span class="eyebrow">FREE FIRE • XTREINO OFICIAL</span>
+  <h1>DEMꓳN<br><span class="accent">SLꓥYER</span></h1>
+  <p>Inscreva sua LINE, conquiste seu slot e domine o XT.</p>
+
+  <div class="actions">
+    <a class="btn" href="#inscricao">INSCREVER LINE</a>
+    <a class="btn secondary" href="#slots">VER EQUIPES</a>
+    <a class="btn" href="./xtreinos.html">
+      🏆 VER CLASSIFICAÇÃO
+    </a>
+  </div>
 </section>
 
 <section class="stats">
-<div class="stat">
-<b id="occupied">0</b>
-<small>Equipes confirmadas</small>
-</div>
-<div class="stat">
-<b id="available">12</b>
-<small>Vagas disponíveis</small>
-</div>
-<div class="stat">
-<b>04</b>
-<small>Quedas por XT</small>
-</div>
+  <div class="stat">
+    <b id="occupied">0</b>
+    <small>Equipes confirmadas</small>
+  </div>
+
+  <div class="stat">
+    <b id="available">12</b>
+    <small>Vagas disponíveis</small>
+  </div>
+
+  <div class="stat">
+    <b>04</b>
+    <small>Quedas por XT</small>
+  </div>
+</section>
+
+<section class="card xt-banner">
+  <span class="eyebrow">CAMPEONATO OFICIAL</span>
+  <h2>🏆 XTREINOS DA SEMANA</h2>
+  <p>
+    Acompanhe as tabelas dos XTREINOS,
+    resultados das quedas e classificação geral.
+  </p>
+
+  <div class="xt-days">
+    <div class="xt-day">
+      SEGUNDA-FEIRA
+      <span>4 quedas</span>
+    </div>
+
+    <div class="xt-day">
+      QUARTA-FEIRA
+      <span>4 quedas</span>
+    </div>
+
+    <div class="xt-day">
+      SEXTA-FEIRA
+      <span>4 quedas</span>
+    </div>
+  </div>
+
+  <a class="btn" href="./xtreinos.html">
+    🏆 ACESSAR TABELAS
+  </a>
 </section>
 
 <section class="card" id="inscricao">
-<span class="eyebrow">INSCRIÇÕES ONLINE</span>
-<h2>Inscrever minha LINE</h2>
-<p>Envie sua inscrição para análise da organização.</p>
-<form id="register">
-<div class="grid">
-<label>Nome da LINE *
-<input name="name" required maxlength="50">
-</label>
-<label>Logo da LINE
-<input name="logo" type="file" accept="image/png,image/jpeg,image/webp">
-</label>
-<label>Capitão *
-<input name="captain" required maxlength="50">
-</label>
-<label>WhatsApp com DDD *
-<input name="phone" required maxlength="25">
-</label>
-<label>1º Rush *
-<input name="rush1" required maxlength="40">
-</label>
-<label>2º Rush *
-<input name="rush2" required maxlength="40">
-</label>
-<label>Granadeiro *
-<input name="grenade" required maxlength="40">
-</label>
-<label>Suporte *
-<input name="support" required maxlength="40">
-</label>
-</div>
-<p><button>ENVIAR INSCRIÇÃO</button></p>
-<p id="regmsg" class="notice" role="status"></p>
-</form>
+  <span class="eyebrow">INSCRIÇÕES ONLINE</span>
+  <h2>Inscrever minha LINE</h2>
+  <p>Envie sua inscrição para análise da organização.</p>
+
+  <form id="register">
+    <div class="grid">
+
+      <label>
+        Nome da LINE *
+        <input name="name" required maxlength="50">
+      </label>
+
+      <label>
+        Logo da LINE
+        <input name="logo" type="file"
+          accept="image/png,image/jpeg,image/webp">
+      </label>
+
+      <label>
+        Capitão *
+        <input name="captain" required maxlength="50">
+      </label>
+
+      <label>
+        WhatsApp com DDD *
+        <input name="phone" required maxlength="25">
+      </label>
+
+      <label>
+        1º Rush *
+        <input name="rush1" required maxlength="40">
+      </label>
+
+      <label>
+        2º Rush *
+        <input name="rush2" required maxlength="40">
+      </label>
+
+      <label>
+        Granadeiro *
+        <input name="grenade" required maxlength="40">
+      </label>
+
+      <label>
+        Suporte *
+        <input name="support" required maxlength="40">
+      </label>
+
+    </div>
+
+    <p><button type="submit">ENVIAR INSCRIÇÃO</button></p>
+    <p id="regmsg" class="notice" role="status"></p>
+  </form>
 </section>
 
 <section class="card" id="slots">
-<span class="eyebrow">EQUIPES CONFIRMADAS</span>
-<h2>Slots do XT</h2>
-<div class="slots" id="slotsgrid"></div>
-<h3>Equipes reservas</h3>
-<div id="reserveslist"></div>
+  <span class="eyebrow">EQUIPES CONFIRMADAS</span>
+  <h2>Slots do XT</h2>
+  <div class="slots" id="slotsgrid"></div>
+
+  <h3>Equipes reservas</h3>
+  <div id="reserveslist"></div>
 </section>
 
 <section class="card" id="ranking">
-<span class="eyebrow">COMPETIÇÃO</span>
-<h2>🏆 Classificação</h2>
-<div class="table-wrap">
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>LINE</th>
-<th>Colocação</th>
-<th>Abates</th>
-<th>Total</th>
-</tr>
-</thead>
-<tbody id="rankbody"></tbody>
-</table>
-</div>
+  <span class="eyebrow">COMPETIÇÃO</span>
+  <h2>🏆 Classificação do XT</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>LINE</th>
+          <th>Colocação</th>
+          <th>Abates</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody id="rankbody"></tbody>
+    </table>
+  </div>
+
+  <p>
+    <a class="btn" href="./xtreinos.html">
+      VER TABELAS DE SEGUNDA, QUARTA E SEXTA
+    </a>
+  </p>
 </section>
 
 <section class="card" id="historico">
-<h2>📜 Histórico de XT</h2>
-<div id="historylist"></div>
+  <h2>📜 Histórico de XT</h2>
+  <div id="historylist"></div>
 </section>
 
 <section class="card" id="parcerias">
-<h2>🤝 Nossas parcerias</h2>
-<div class="partners" id="partnerslist"></div>
+  <h2>🤝 Nossas parcerias</h2>
+  <div class="partners" id="partnerslist"></div>
 </section>
 
 <section class="card" id="regras">
-<h2>📋 Regras e mapas</h2>
-<p id="rules" style="white-space:pre-wrap"></p>
-<div class="grid">
-<div class="stat">🏝️ Bermuda</div>
-<div class="stat">🌋 Purgatório</div>
-<div class="stat">🏜️ Kalahari</div>
-<div class="stat">🌍 Nova Terra</div>
-</div>
+  <h2>📋 Regras e mapas</h2>
+  <p id="rules" style="white-space:pre-wrap"></p>
+
+  <div class="grid">
+    <div class="stat">🏝️ Bermuda</div>
+    <div class="stat">🌋 Purgatório</div>
+    <div class="stat">🏜️ Kalahari</div>
+    <div class="stat">🌍 Nova Terra</div>
+  </div>
 </section>
 
 <section class="card" id="adm">
-<span class="eyebrow">ACESSO RESTRITO</span>
-<h2>⚙️ Painel ADM</h2>
+  <span class="eyebrow">ACESSO RESTRITO</span>
+  <h2>⚙️ Painel ADM</h2>
 
-<form id="loginform">
-<label>E-mail do administrador
-<input id="adminemail" type="email" autocomplete="username" required>
-</label>
-<p>
-<label>Senha
-<input id="adminpassword" type="password" autocomplete="current-password" required>
-</label>
-</p>
-<button>ENTRAR COMO ADM</button>
-</form>
+  <form id="loginform">
+    <label>
+      E-mail do administrador
+      <input id="adminemail" type="email"
+        autocomplete="username" required>
+    </label>
 
-<p id="loginmsg" class="notice"></p>
+    <p>
+      <label>
+        Senha
+        <input id="adminpassword" type="password"
+          autocomplete="current-password" required>
+      </label>
+    </p>
 
-<div id="adminpanel" class="hidden">
-<button id="logout" class="secondary" type="button">SAIR DA CONTA</button>
+    <button type="submit">ENTRAR COMO ADM</button>
+  </form>
 
-<div class="admin-box">
-<h2>📋 Gerenciar inscrições</h2>
-<div id="adminteams"></div>
-</div>
+  <p id="loginmsg" class="notice"></p>
 
-<div class="admin-box">
-<h2>⚙️ Configurações</h2>
-<form id="settings">
-<div class="grid">
-<label>Nome do evento
-<input id="eventinput" required>
-</label>
-<label>Limite de equipes
-<input id="capacity" type="number" min="1" max="100" required>
-</label>
-</div>
-<p>
-<label>Regras
-<textarea id="rulesinput" required></textarea>
-</label>
-</p>
-<button>SALVAR CONFIGURAÇÕES</button>
-</form>
-</div>
+  <div id="adminpanel" class="hidden">
+    <button id="logout" class="secondary" type="button">
+      SAIR DA CONTA
+    </button>
 
-<div class="admin-box">
-<h2>🤝 Gerenciar parcerias</h2>
-<form id="partnerform">
-<input id="partnerid" type="hidden">
-<div class="grid">
-<label>Nome *
-<input name="name" id="partnername" required>
-</label>
-<label>Logo
-<input name="logo" type="file" accept="image/png,image/jpeg,image/webp">
-</label>
-<label>Link
-<input name="url" id="partnerurl" type="url">
-</label>
-<label>Descrição
-<input name="description" id="partnerdescription">
-</label>
-</div>
-<p>
-<button>SALVAR PARCERIA</button>
-<button id="cancelpartner" type="button" class="secondary">LIMPAR</button>
-</p>
-</form>
-<div id="adminpartners"></div>
-</div>
+    <div class="admin-box">
+      <h2>📋 Gerenciar inscrições</h2>
+      <div id="adminteams"></div>
+    </div>
 
-<div class="admin-box warning">
-<h2>🏁 Finalizar XT</h2>
-<p>Salva o ranking no histórico e remove todas as equipes atuais, liberando os slots.</p>
-<label>Digite FINALIZAR XT
-<input id="confirmfinish" placeholder="FINALIZAR XT">
-</label>
-<p>
-<button id="finish" type="button" class="danger">FINALIZAR XT</button>
-</p>
-</div>
-<p id="adminmsg" class="notice"></p>
-</div>
+    <div class="admin-box">
+      <h2>⚙️ Configurações</h2>
+
+      <form id="settings">
+        <div class="grid">
+          <label>
+            Nome do evento
+            <input id="eventinput" required>
+          </label>
+
+          <label>
+            Limite de equipes
+            <input id="capacity" type="number"
+              min="1" max="100" required>
+          </label>
+        </div>
+
+        <p>
+          <label>
+            Regras
+            <textarea id="rulesinput" required></textarea>
+          </label>
+        </p>
+
+        <button type="submit">SALVAR CONFIGURAÇÕES</button>
+      </form>
+    </div>
+
+    <div class="admin-box">
+      <h2>🤝 Gerenciar parcerias</h2>
+
+      <form id="partnerform">
+        <input id="partnerid" type="hidden">
+
+        <div class="grid">
+          <label>
+            Nome *
+            <input name="name" id="partnername" required>
+          </label>
+
+          <label>
+            Logo
+            <input name="logo" type="file"
+              accept="image/png,image/jpeg,image/webp">
+          </label>
+
+          <label>
+            Link
+            <input name="url" id="partnerurl" type="url">
+          </label>
+
+          <label>
+            Descrição
+            <input name="description" id="partnerdescription">
+          </label>
+        </div>
+
+        <p>
+          <button type="submit">SALVAR PARCERIA</button>
+          <button id="cancelpartner" type="button"
+            class="secondary">LIMPAR</button>
+        </p>
+      </form>
+
+      <div id="adminpartners"></div>
+    </div>
+
+    <div class="admin-box warning">
+      <h2>🏁 Finalizar XT</h2>
+
+      <p>
+        Salva o ranking no histórico e remove todas
+        as equipes atuais, liberando os slots.
+      </p>
+
+      <label>
+        Digite FINALIZAR XT
+        <input id="confirmfinish" placeholder="FINALIZAR XT">
+      </label>
+
+      <p>
+        <button id="finish" type="button" class="danger">
+          FINALIZAR XT
+        </button>
+      </p>
+    </div>
+
+    <p id="adminmsg" class="notice"></p>
+  </div>
 </section>
+
 </main>
 
-<footer>DEMꓳN SLꓥYER • XTREINO FREE FIRE</footer>
+<footer>
+  DEMꓳN SLꓥYER • XTREINO FREE FIRE
+  <p>
+    <a href="./xtreinos.html" style="color:#c49aff">
+      🏆 CLASSIFICAÇÃO GERAL
+    </a>
+  </p>
+</footer>
 
 <script type="module">
 import XT from "./dados.js";
 
 const $ = q => document.querySelector(q);
 
-const esc = v => String(v ?? "").replace(/[&<>"']/g,c=>({
-"&":"&amp;",
-"<":"&lt;",
-">":"&gt;",
-'"':"&quot;",
-"'":"&#39;"
-})[c]);
+const esc = v => String(v ?? "").replace(
+  /[&<>"']/g,
+  c => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  })[c]
+);
 
 const state = {
- config:{
-  event:"XTREINO DEMꓳN SLꓥYER",
-  capacity:12,
-  rules:""
- },
- teams:[],
- history:[],
- partners:[],
- registrations:[]
+  config: {
+    event: "XTREINO DEMꓳN SLꓥYER",
+    capacity: 12,
+    rules: ""
+  },
+  teams: [],
+  history: [],
+  partners: [],
+  registrations: []
 };
 
 let admin = false;
 let stopRegistrations = null;
 
-function message(id,text){
- $(id).textContent=text;
+function message(id,text) {
+  $(id).textContent = text;
 }
 
-function logoHTML(src){
- if(typeof src!=="string" ||
- !/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(src)) return "";
- return `<img src="${src}" alt="Logo da LINE">`;
+function logoHTML(src) {
+  if (
+    typeof src !== "string" ||
+    !/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(src)
+  ) return "";
+
+  return `<img src="${src}" alt="Logo da LINE">`;
 }
 
-async function image(file){
- if(!file || !file.size) return "";
+async function image(file) {
+  if (!file || !file.size) return "";
 
- if(!["image/jpeg","image/png","image/webp"].includes(file.type)){
-  throw Error("Formato de imagem inválido.");
- }
+  if (![
+    "image/jpeg",
+    "image/png",
+    "image/webp"
+  ].includes(file.type)) {
+    throw Error("Formato de imagem inválido.");
+  }
 
- const bitmap=await createImageBitmap(file);
- const scale=Math.min(1,180/Math.max(bitmap.width,bitmap.height));
- const canvas=document.createElement("canvas");
- canvas.width=Math.max(1,Math.round(bitmap.width*scale));
- canvas.height=Math.max(1,Math.round(bitmap.height*scale));
- canvas.getContext("2d").drawImage(bitmap,0,0,canvas.width,canvas.height);
- bitmap.close();
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(
+    1,
+    180 / Math.max(bitmap.width,bitmap.height)
+  );
 
- let quality=.75;
- let result=canvas.toDataURL("image/jpeg",quality);
+  const canvas = document.createElement("canvas");
 
- while(result.length>80000 && quality>.25){
-  quality-=.1;
-  result=canvas.toDataURL("image/jpeg",quality);
- }
- if(result.length>80000) throw Error("Logo muito grande.");
- return result;
+  canvas.width = Math.max(
+    1,
+    Math.round(bitmap.width * scale)
+  );
+
+  canvas.height = Math.max(
+    1,
+    Math.round(bitmap.height * scale)
+  );
+
+  canvas.getContext("2d").drawImage(
+    bitmap,0,0,canvas.width,canvas.height
+  );
+
+  bitmap.close();
+
+  let quality = .75;
+  let result = canvas.toDataURL("image/jpeg",quality);
+
+  while (result.length > 80000 && quality > .25) {
+    quality -= .1;
+    result = canvas.toDataURL("image/jpeg",quality);
+  }
+
+  if (result.length > 80000) {
+    throw Error("Logo muito grande.");
+  }
+
+  return result;
 }
 
-function approved(){
- return state.teams.filter(t=>t.status==="approved");
+function approved() {
+  return state.teams.filter(
+    t => t.status === "approved"
+  );
 }
 
-function render(){
- const teams=approved();
- const capacity=Number(state.config.capacity)||12;
+function render() {
+  const teams = approved();
+  const capacity = Number(state.config.capacity) || 12;
 
- $("#occupied").textContent=teams.length;
- $("#available").textContent=Math.max(0,capacity-teams.length);
- $("#rules").textContent=state.config.rules;
+  $("#occupied").textContent = teams.length;
+  $("#available").textContent = Math.max(
+    0,
+    capacity - teams.length
+  );
 
- $("#slotsgrid").innerHTML=Array.from({length:capacity},(_,i)=>{
-  const t=teams[i];
-  return `<div class="slot">
-  <span class="num">${String(i+1).padStart(2,"0")}</span>
-  ${t?logoHTML(t.logo):""}
-  <div>
-   <b>${t?esc(t.team):"VAGA LIVRE"}</b>
-   <div class="tag">${t?"CONFIRMADA":"DISPONÍVEL"}</div>
-  </div>
-  </div>`;
- }).join("");
+  $("#rules").textContent = state.config.rules;
 
- const reserves=state.teams.filter(t=>t.status==="reserve");
+  $("#slotsgrid").innerHTML = Array.from(
+    {length:capacity},
+    (_,i) => {
+      const t = teams[i];
 
- $("#reserveslist").innerHTML=reserves.length
- ?reserves.map(t=>`<p>🟣 ${esc(t.team)}</p>`).join("")
- :"<p>Nenhuma reserva.</p>";
+      return `
+        <div class="slot">
+          <span class="num">
+            ${String(i+1).padStart(2,"0")}
+          </span>
 
- const ranking=[...teams].sort((a,b)=>
-  (Number(b.points)||0)-(Number(a.points)||0) ||
-  (Number(b.kills)||0)-(Number(a.kills)||0)
- );
+          ${t ? logoHTML(t.logo) : ""}
 
- $("#rankbody").innerHTML=ranking.length
- ?ranking.map((t,i)=>`<tr>
-  <td>${i+1}º</td>
-  <td>${esc(t.team)}</td>
-  <td>${Number(t.placement)||0}</td>
-  <td>${Number(t.kills)||0}</td>
-  <td>${Number(t.points)||0}</td>
-  </tr>`).join("")
- :'<tr><td colspan="5">Aguardando classificação.</td></tr>';
+          <div>
+            <b>${t ? esc(t.team) : "VAGA LIVRE"}</b>
+            <div class="tag">
+              ${t ? "CONFIRMADA" : "DISPONÍVEL"}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  ).join("");
 
- $("#historylist").innerHTML=[...state.history]
- .sort((a,b)=>(b.finishedAt?.seconds||0)-(a.finishedAt?.seconds||0))
- .map(h=>`<div class="admin-box">
-  <h3>${esc(h.event)}</h3>
-  <p>Finalizado: ${h.finishedAt?.toDate?.().toLocaleString("pt-BR")||"Data indisponível"}</p>
-  <div class="table-wrap">
-  <table>
-  <thead><tr><th>LINE</th><th>Abates</th><th>Pontos</th></tr></thead>
-  <tbody>${(h.ranking||[]).map(t=>`<tr>
-  <td>${esc(t.team)}</td>
-  <td>${Number(t.kills)||0}</td>
-  <td>${Number(t.points)||0}</td>
-  </tr>`).join("")}</tbody>
-  </table>
-  </div>
-  </div>`).join("")
- ||"<p>Nenhum XT finalizado.</p>";
+  const reserves = state.teams.filter(
+    t => t.status === "reserve"
+  );
 
- $("#partnerslist").innerHTML=state.partners.map(p=>`
-  <div class="partner">
-  ${logoHTML(p.logo)}
-  <h3>${esc(p.name)}</h3>
-  <p>${esc(p.description)}</p>
-  ${/^https:\/\//i.test(p.url||"")
-  ?`<a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">VISITAR</a>`:""}
-  </div>`).join("")
- ||"<p>Nenhuma parceria cadastrada.</p>";
+  $("#reserveslist").innerHTML = reserves.length
+    ? reserves.map(
+        t => `<p>🟣 ${esc(t.team)}</p>`
+      ).join("")
+    : "<p>Nenhuma reserva.</p>";
 
- if(admin) renderAdmin();
+  const ranking = [...teams].sort(
+    (a,b) =>
+      (Number(b.points)||0) - (Number(a.points)||0) ||
+      (Number(b.kills)||0) - (Number(a.kills)||0)
+  );
+
+  $("#rankbody").innerHTML = ranking.length
+    ? ranking.map((t,i) => `
+        <tr>
+          <td>${i+1}º</td>
+          <td>${esc(t.team)}</td>
+          <td>${Number(t.placement)||0}</td>
+          <td>${Number(t.kills)||0}</td>
+          <td>${Number(t.points)||0}</td>
+        </tr>
+      `).join("")
+    : '<tr><td colspan="5">Aguardando classificação.</td></tr>';
+
+  $("#historylist").innerHTML = [...state.history]
+    .sort(
+      (a,b) =>
+        (b.finishedAt?.seconds||0) -
+        (a.finishedAt?.seconds||0)
+    )
+    .map(h => `
+      <div class="admin-box">
+        <h3>${esc(h.event)}</h3>
+        <p>
+          Finalizado:
+          ${h.finishedAt?.toDate?.().toLocaleString("pt-BR") || "Data indisponível"}
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>LINE</th>
+                <th>Abates</th>
+                <th>Pontos</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              ${(h.ranking||[]).map(t => `
+                <tr>
+                  <td>${esc(t.team)}</td>
+                  <td>${Number(t.kills)||0}</td>
+                  <td>${Number(t.points)||0}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `).join("") || "<p>Nenhum XT finalizado.</p>";
+
+  $("#partnerslist").innerHTML = state.partners.map(
+    p => `
+      <div class="partner">
+        ${logoHTML(p.logo)}
+        <h3>${esc(p.name)}</h3>
+        <p>${esc(p.description)}</p>
+
+        ${
+          /^https:\/\//i.test(p.url||"")
+            ? `<a href="${esc(p.url)}"
+                 target="_blank"
+                 rel="noopener noreferrer">VISITAR</a>`
+            : ""
+        }
+      </div>
+    `
+  ).join("") || "<p>Nenhuma parceria cadastrada.</p>";
+
+  if (admin) renderAdmin();
 }
 
-function renderAdmin(){
- $("#eventinput").value=state.config.event;
- $("#capacity").value=state.config.capacity;
- $("#rulesinput").value=state.config.rules;
+function renderAdmin() {
+  $("#eventinput").value = state.config.event;
+  $("#capacity").value = state.config.capacity;
+  $("#rulesinput").value = state.config.rules;
 
- $("#adminteams").innerHTML=state.registrations.map(t=>`
- <div class="team" data-id="${esc(t.id)}">
- <h3>${esc(t.team)} <small>${esc(t.status)}</small></h3>
- <p>
- Capitão: ${esc(t.leader)}<br>
- WhatsApp: ${esc(t.contact)}<br>
- Rush 1: ${esc(t.rush)}<br>
- Rush 2: ${esc(t.rush2)}<br>
- Granadeiro: ${esc(t.grenadier)}<br>
- Suporte: ${esc(t.support)}
- </p>
- <div class="actions">
- <button data-action="approved">APROVAR</button>
- <button data-action="reserve" class="secondary">RESERVA</button>
- <button data-action="rejected" class="secondary">RECUSAR</button>
- <button data-action="delete" class="danger">EXCLUIR</button>
- </div>
- <div class="grid">
- <label>Colocação
- <input class="placement" type="number" min="0"
- value="${Number(state.teams.find(x=>x.id===t.id)?.placement)||0}">
- </label>
- <label>Abates
- <input class="kills" type="number" min="0"
- value="${Number(state.teams.find(x=>x.id===t.id)?.kills)||0}">
- </label>
- <label>Total
- <input class="points" type="number" min="0"
- value="${Number(state.teams.find(x=>x.id===t.id)?.points)||0}">
- </label>
- </div>
- <p><button data-action="score" class="secondary">SALVAR PONTOS</button></p>
- </div>`).join("")
- ||"<p>Nenhuma inscrição.</p>";
+  $("#adminteams").innerHTML = state.registrations.map(
+    t => `
+      <div class="team" data-id="${esc(t.id)}">
+        <h3>
+          ${esc(t.team)}
+          <small>${esc(t.status)}</small>
+        </h3>
 
- $("#adminpartners").innerHTML=state.partners.map(p=>`
- <div class="team">
- <b>${esc(p.name)}</b>
- <div class="actions">
- <button data-edit="${esc(p.id)}">EDITAR</button>
- <button data-remove="${esc(p.id)}" class="danger">EXCLUIR</button>
- </div>
- </div>`).join("");
+        <p>
+          Capitão: ${esc(t.leader)}<br>
+          WhatsApp: ${esc(t.contact)}<br>
+          Rush 1: ${esc(t.rush)}<br>
+          Rush 2: ${esc(t.rush2)}<br>
+          Granadeiro: ${esc(t.grenadier)}<br>
+          Suporte: ${esc(t.support)}
+        </p>
+
+        <div class="actions">
+          <button data-action="approved">APROVAR</button>
+          <button data-action="reserve" class="secondary">
+            RESERVA
+          </button>
+          <button data-action="rejected" class="secondary">
+            RECUSAR
+          </button>
+          <button data-action="delete" class="danger">
+            EXCLUIR
+          </button>
+        </div>
+
+        <div class="grid">
+          <label>
+            Colocação
+            <input class="placement" type="number" min="0"
+              value="${
+                Number(
+                  state.teams.find(x=>x.id===t.id)?.placement
+                )||0
+              }">
+          </label>
+
+          <label>
+            Abates
+            <input class="kills" type="number" min="0"
+              value="${
+                Number(
+                  state.teams.find(x=>x.id===t.id)?.kills
+                )||0
+              }">
+          </label>
+
+          <label>
+            Total
+            <input class="points" type="number" min="0"
+              value="${
+                Number(
+                  state.teams.find(x=>x.id===t.id)?.points
+                )||0
+              }">
+          </label>
+        </div>
+
+        <p>
+          <button data-action="score" class="secondary">
+            SALVAR PONTOS
+          </button>
+        </p>
+      </div>
+    `
+  ).join("") || "<p>Nenhuma inscrição.</p>";
+
+  $("#adminpartners").innerHTML = state.partners.map(
+    p => `
+      <div class="team">
+        <b>${esc(p.name)}</b>
+
+        <div class="actions">
+          <button data-edit="${esc(p.id)}">EDITAR</button>
+          <button data-remove="${esc(p.id)}" class="danger">
+            EXCLUIR
+          </button>
+        </div>
+      </div>
+    `
+  ).join("");
 }
 
-XT.watchPublic(data=>{
- Object.assign(state,data);
- render();
-},err=>message("#regmsg","Erro ao carregar Firebase: "+err.message));
+XT.watchPublic(
+  data => {
+    Object.assign(state,data);
+    render();
+  },
+  err => message(
+    "#regmsg",
+    "Erro ao carregar Firebase: " + err.message
+  )
+);
 
-XT.watchAuth(isAdmin=>{
- admin=isAdmin;
- $("#loginform").classList.toggle("hidden",admin);
- $("#adminpanel").classList.toggle("hidden",!admin);
+XT.watchAuth(isAdmin => {
+  admin = isAdmin;
 
- if(stopRegistrations){
-  stopRegistrations();
-  stopRegistrations=null;
- }
+  $("#loginform").classList.toggle("hidden",admin);
+  $("#adminpanel").classList.toggle("hidden",!admin);
 
- if(admin){
-  message("#loginmsg","Administrador conectado.");
-  stopRegistrations=XT.watchRegistrations(teams=>{
-   state.registrations=teams;
-   renderAdmin();
-  },err=>message("#adminmsg",err.message));
- }else{
-  state.registrations=[];
- }
+  if (stopRegistrations) {
+    stopRegistrations();
+    stopRegistrations = null;
+  }
+
+  if (admin) {
+    message("#loginmsg","Administrador conectado.");
+
+    stopRegistrations = XT.watchRegistrations(
+      teams => {
+        state.registrations = teams;
+        renderAdmin();
+      },
+      err => message("#adminmsg",err.message)
+    );
+  } else {
+    state.registrations = [];
+  }
 });
 
-$("#loginform").onsubmit=async e=>{
- e.preventDefault();
- try{
-  await XT.login($("#adminemail").value,$("#adminpassword").value);
-  $("#adminpassword").value="";
- }catch(err){
-  message("#loginmsg",err.message);
- }
-};
+$("#loginform").onsubmit = async e => {
+  e.preventDefault();
 
-$("#logout").onclick=()=>XT.logout();
+  try {
+    await XT.login(
+      $("#adminemail").value,
+      $("#adminpassword").value
+    );
 
-$("#register").onsubmit=async e=>{
- e.preventDefault();
- const form=e.currentTarget;
- const button=form.querySelector("button");
- button.disabled=true;
-
- try{
-  const f=new FormData(form);
-  const team={};
-
-  for(const key of ["name","captain","phone","rush1","rush2","grenade","support"]){
-   team[key]=String(f.get(key)||"").trim();
+    $("#adminpassword").value = "";
+  } catch (err) {
+    message("#loginmsg",err.message);
   }
-
-  team.logo=await image(f.get("logo"));
-  await XT.register(team);
-  form.reset();
-  message("#regmsg","Inscrição enviada! Aguarde aprovação do ADM.");
- }catch(err){
-  message("#regmsg","Erro: "+err.message);
- }finally{
-  button.disabled=false;
- }
 };
 
-$("#adminteams").onclick=async e=>{
- const btn=e.target.closest("button[data-action]");
- if(!btn||!admin)return;
+$("#logout").onclick = () => XT.logout();
 
- const row=btn.closest("[data-id]");
- const id=row.dataset.id;
- const action=btn.dataset.action;
+$("#register").onsubmit = async e => {
+  e.preventDefault();
 
- try{
-  btn.disabled=true;
+  const form = e.currentTarget;
+  const button = form.querySelector("button");
 
-  if(action==="delete"){
-   if(!confirm("Excluir esta equipe?"))return;
-   await XT.deleteTeam(id);
-  }else if(action==="score"){
-   await XT.saveScore(
-    id,
-    row.querySelector(".placement").value,
-    row.querySelector(".kills").value,
-    row.querySelector(".points").value
-   );
-  }else{
-   await XT.setStatus(id,action);
+  button.disabled = true;
+
+  try {
+    const f = new FormData(form);
+    const team = {};
+
+    for (const key of [
+      "name",
+      "captain",
+      "phone",
+      "rush1",
+      "rush2",
+      "grenade",
+      "support"
+    ]) {
+      team[key] = String(f.get(key)||"").trim();
+    }
+
+    team.logo = await image(f.get("logo"));
+
+    await XT.register(team);
+
+    form.reset();
+
+    message(
+      "#regmsg",
+      "Inscrição enviada! Aguarde aprovação do ADM."
+    );
+  } catch (err) {
+    message("#regmsg","Erro: " + err.message);
+  } finally {
+    button.disabled = false;
   }
-
-  message("#adminmsg","Alteração salva.");
- }catch(err){
-  alert(err.message);
- }finally{
-  btn.disabled=false;
- }
 };
 
-$("#settings").onsubmit=async e=>{
- e.preventDefault();
- try{
-  await XT.saveConfig({
-   event:$("#eventinput").value,
-   capacity:$("#capacity").value,
-   rules:$("#rulesinput").value
-  });
-  message("#adminmsg","Configurações salvas.");
- }catch(err){
-  alert(err.message);
- }
+$("#adminteams").onclick = async e => {
+  const btn = e.target.closest("button[data-action]");
+
+  if (!btn || !admin) return;
+
+  const row = btn.closest("[data-id]");
+  const id = row.dataset.id;
+  const action = btn.dataset.action;
+
+  try {
+    btn.disabled = true;
+
+    if (action === "delete") {
+      if (!confirm("Excluir esta equipe?")) return;
+      await XT.deleteTeam(id);
+
+    } else if (action === "score") {
+      await XT.saveScore(
+        id,
+        row.querySelector(".placement").value,
+        row.querySelector(".kills").value,
+        row.querySelector(".points").value
+      );
+
+    } else {
+      await XT.setStatus(id,action);
+    }
+
+    message("#adminmsg","Alteração salva.");
+
+  } catch (err) {
+    alert(err.message);
+  } finally {
+    btn.disabled = false;
+  }
 };
 
-function resetPartner(){
- $("#partnerform").reset();
- $("#partnerid").value="";
+$("#settings").onsubmit = async e => {
+  e.preventDefault();
+
+  try {
+    await XT.saveConfig({
+      event: $("#eventinput").value,
+      capacity: $("#capacity").value,
+      rules: $("#rulesinput").value
+    });
+
+    message("#adminmsg","Configurações salvas.");
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
+function resetPartner() {
+  $("#partnerform").reset();
+  $("#partnerid").value = "";
 }
 
-$("#cancelpartner").onclick=resetPartner;
+$("#cancelpartner").onclick = resetPartner;
 
-$("#partnerform").onsubmit=async e=>{
- e.preventDefault();
+$("#partnerform").onsubmit = async e => {
+  e.preventDefault();
 
- try{
-  const f=new FormData(e.currentTarget);
-  const id=$("#partnerid").value;
-  const old=state.partners.find(p=>p.id===id);
+  try {
+    const f = new FormData(e.currentTarget);
+    const id = $("#partnerid").value;
 
-  await XT.savePartner({
-   id,
-   name:f.get("name"),
-   description:f.get("description"),
-   url:f.get("url"),
-   logo:f.get("logo")?.size
-   ?await image(f.get("logo"))
-   :(old?.logo||"")
-  });
+    const old = state.partners.find(
+      p => p.id === id
+    );
 
-  resetPartner();
-  message("#adminmsg","Parceria salva.");
- }catch(err){
-  alert(err.message);
- }
-};
+    await XT.savePartner({
+      id,
+      name: f.get("name"),
+      description: f.get("description"),
+      url: f.get("url"),
+      logo: f.get("logo")?.size
+        ? await image(f.get("logo"))
+        : (old?.logo||"")
+    });
 
-$("#adminpartners").onclick=async e=>{
- const edit=e.target.closest("[data-edit]");
- const remove=e.target.closest("[data-remove]");
+    resetPartner();
+    message("#adminmsg","Parceria salva.");
 
- if(edit){
-  const p=state.partners.find(x=>x.id===edit.dataset.edit);
-  if(!p)return;
-
-  $("#partnerid").value=p.id;
-  $("#partnername").value=p.name;
-  $("#partnerurl").value=p.url||"";
-  $("#partnerdescription").value=p.description||"";
-  $("#partnerform").scrollIntoView({behavior:"smooth"});
- }
-
- if(remove&&confirm("Excluir parceria?")){
-  try{
-   await XT.deletePartner(remove.dataset.remove);
-  }catch(err){
-   alert(err.message);
+  } catch (err) {
+    alert(err.message);
   }
- }
 };
 
-$("#finish").onclick=async()=>{
- if(!confirm("Finalizar o XT, salvar histórico e liberar todas as vagas?"))return;
+$("#adminpartners").onclick = async e => {
+  const edit = e.target.closest("[data-edit]");
+  const remove = e.target.closest("[data-remove]");
 
- try{
-  const result=await XT.finish($("#confirmfinish").value.trim());
-  $("#confirmfinish").value="";
-  message("#adminmsg",result.message);
-  alert(result.message);
- }catch(err){
-  alert(err.message);
- }
+  if (edit) {
+    const p = state.partners.find(
+      x => x.id === edit.dataset.edit
+    );
+
+    if (!p) return;
+
+    $("#partnerid").value = p.id;
+    $("#partnername").value = p.name;
+    $("#partnerurl").value = p.url||"";
+    $("#partnerdescription").value = p.description||"";
+
+    $("#partnerform").scrollIntoView({
+      behavior:"smooth"
+    });
+  }
+
+  if (remove && confirm("Excluir parceria?")) {
+    try {
+      await XT.deletePartner(remove.dataset.remove);
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+};
+
+$("#finish").onclick = async () => {
+  if (!confirm(
+    "Finalizar o XT, salvar histórico e liberar todas as vagas?"
+  )) return;
+
+  try {
+    const result = await XT.finish(
+      $("#confirmfinish").value.trim()
+    );
+
+    $("#confirmfinish").value = "";
+
+    message("#adminmsg",result.message);
+    alert(result.message);
+
+  } catch (err) {
+    alert(err.message);
+  }
 };
 </script>
+
 </body>
 </html>
+
