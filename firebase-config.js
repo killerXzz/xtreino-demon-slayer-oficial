@@ -1,5 +1,5 @@
 
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyBX6hLTNoeD9LhcUV-lG3qqW69MbJdGQN8",
   authDomain: "demon-slayer-xtreino-e81b7.firebaseapp.com",
   projectId: "demon-slayer-xtreino-e81b7",
@@ -8,3 +8,4 @@ const firebaseConfig = {
   appId: "1:545991125458:web:e9bdb3322edad31907800b",
   measurementId: "G-0H6S88RGGL"
 };
+
