@@ -1,11 +1,15 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#100609">
+
 <title>DEMꓳN SLꓥYER | XTREINO</title>
+
+<!-- Sua foto como ícone da aba -->
+<link rel="icon" type="image/png" href="./image(2).png?v=2">
+<link rel="apple-touch-icon" href="./image(2).png?v=2">
 
 <style>
 :root {
@@ -29,11 +33,7 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    linear-gradient(
-      90deg,
-      rgba(10,3,6,.90),
-      rgba(18,4,8,.68)
-    ),
+    linear-gradient(90deg,rgba(10,3,6,.90),rgba(18,4,8,.68)),
     url("./tanjiro.png") center center/cover fixed no-repeat;
   background-color: #090507;
 }
@@ -78,13 +78,11 @@ nav {
   font-size: 13px;
 }
 
-.links a:hover {
-  color: var(--accent);
-}
+.links a:hover { color: var(--accent); }
 
 .links .nav-ranking {
   background: var(--red);
-  color: #fff;
+  color: white;
   padding: 11px 14px;
   border-radius: 10px;
   font-weight: 800;
@@ -102,10 +100,7 @@ main {
 }
 
 section[id] { scroll-margin-top: 110px; }
-
-.hero {
-  padding: 65px 0;
-}
+.hero { padding: 65px 0; }
 
 .hero h1 {
   font-size: clamp(42px,8vw,78px);
@@ -113,10 +108,7 @@ section[id] { scroll-margin-top: 110px; }
   text-shadow: 0 5px 25px #000;
 }
 
-.accent,
-.num {
-  color: var(--accent);
-}
+.accent, .num { color: var(--accent); }
 
 .eyebrow {
   color: var(--accent);
@@ -130,10 +122,7 @@ p {
   line-height: 1.6;
 }
 
-.card,
-.stat,
-.slot,
-.partner {
+.card, .stat, .slot, .partner {
   background: rgba(28,10,15,.90);
   backdrop-filter: blur(9px);
   -webkit-backdrop-filter: blur(9px);
@@ -143,27 +132,18 @@ p {
   box-shadow: 0 8px 30px #0005;
 }
 
-.card {
-  margin: 25px 0;
-}
+.card { margin: 25px 0; }
 
-.stats,
-.grid,
-.slots,
-.partners {
+.stats, .grid, .slots, .partners {
   display: grid;
   gap: 14px;
 }
 
-.stats,
-.slots,
-.partners {
+.stats, .slots, .partners {
   grid-template-columns: repeat(3,1fr);
 }
 
-.grid {
-  grid-template-columns: repeat(2,1fr);
-}
+.grid { grid-template-columns: repeat(2,1fr); }
 
 .stat b {
   display: block;
@@ -171,14 +151,12 @@ p {
   color: var(--accent);
 }
 
-small,
-.tag {
+small, .tag {
   color: #f0a9b3;
   font-size: 12px;
 }
 
-button,
-.btn {
+button, .btn {
   background: var(--red);
   border: 0;
   border-radius: 10px;
@@ -191,8 +169,7 @@ button,
   transition: background .2s,transform .2s;
 }
 
-button:hover,
-.btn:hover {
+button:hover, .btn:hover {
   background: var(--red-hover);
   transform: translateY(-1px);
 }
@@ -203,21 +180,10 @@ button:disabled {
   transform: none;
 }
 
-.secondary {
-  background: #48242b;
-}
-
-.secondary:hover {
-  background: #63313a;
-}
-
-.danger {
-  background: #a51026;
-}
-
-.danger:hover {
-  background: #d01b35;
-}
+.secondary { background: #48242b; }
+.secondary:hover { background: #63313a; }
+.danger { background: #a51026; }
+.danger:hover { background: #d01b35; }
 
 .actions {
   display: flex;
@@ -232,8 +198,7 @@ label {
   font-weight: 700;
 }
 
-input,
-textarea {
+input, textarea {
   display: block;
   width: 100%;
   margin-top: 7px;
@@ -245,15 +210,12 @@ textarea {
   font: inherit;
 }
 
-input:focus,
-textarea:focus {
+input:focus, textarea:focus {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
 
-textarea {
-  min-height: 115px;
-}
+textarea { min-height: 115px; }
 
 .slot {
   display: flex;
@@ -262,8 +224,7 @@ textarea {
   min-height: 85px;
 }
 
-.slot img,
-.partner img {
+.slot img, .partner img {
   width: 58px;
   height: 58px;
   object-fit: cover;
@@ -281,9 +242,7 @@ textarea {
   height: 85px;
 }
 
-.partner a {
-  color: var(--accent);
-}
+.partner a { color: var(--accent); }
 
 .team {
   padding: 18px 0;
@@ -295,28 +254,16 @@ table {
   border-collapse: collapse;
 }
 
-td,
-th {
+td, th {
   padding: 12px;
   text-align: left;
   border-bottom: 1px solid var(--border);
 }
 
-th {
-  color: var(--accent);
-}
-
-tbody tr:hover {
-  background: rgba(255,64,77,.08);
-}
-
-.table-wrap {
-  overflow-x: auto;
-}
-
-.hidden {
-  display: none!important;
-}
+th { color: var(--accent); }
+tbody tr:hover { background: rgba(255,64,77,.08); }
+.table-wrap { overflow-x: auto; }
+.hidden { display: none!important; }
 
 .notice {
   color: #f0a9b3;
@@ -331,9 +278,7 @@ tbody tr:hover {
   margin: 20px 0;
 }
 
-.warning {
-  border-color: #e12b43;
-}
+.warning { border-color: #e12b43; }
 
 .xt-banner {
   text-align: center;
@@ -341,9 +286,7 @@ tbody tr:hover {
   background: rgba(45,9,18,.95);
 }
 
-.xt-banner h2 {
-  color: var(--accent);
-}
+.xt-banner h2 { color: var(--accent); }
 
 .xt-days {
   display: grid;
@@ -375,9 +318,7 @@ footer {
   border-top: 1px solid var(--border);
 }
 
-footer a {
-  color: var(--accent);
-}
+footer a { color: var(--accent); }
 
 @media(max-width:750px) {
   body {
@@ -385,39 +326,24 @@ footer a {
     background-position: center top;
   }
 
-  .stats,
-  .slots,
-  .partners {
+  .stats, .slots, .partners {
     grid-template-columns: repeat(2,1fr);
   }
 }
 
 @media(max-width:520px) {
-  .stats,
-  .slots,
-  .partners,
-  .grid,
-  .xt-days {
+  .stats, .slots, .partners, .grid, .xt-days {
     grid-template-columns: 1fr;
   }
 
-  .card {
-    padding: 16px;
-  }
-
-  .hero {
-    padding: 45px 0;
-  }
-
-  .links {
-    gap: 10px;
-  }
+  .card { padding: 16px; }
+  .hero { padding: 45px 0; }
+  .links { gap: 10px; }
 }
 </style>
 </head>
 
 <body>
-
 <header>
   <nav>
     <div class="brand">⚔ DEMꓳN SLꓥYER</div>
@@ -437,7 +363,6 @@ footer a {
 </header>
 
 <main>
-
 <section class="hero" id="inicio">
   <span class="eyebrow">FREE FIRE • XTREINO OFICIAL</span>
 
@@ -451,9 +376,7 @@ footer a {
   <div class="actions">
     <a class="btn" href="#inscricao">INSCREVER LINE</a>
     <a class="btn secondary" href="#slots">VER EQUIPES</a>
-    <a class="btn" href="./xtreinos.html">
-      🏆 VER CLASSIFICAÇÃO
-    </a>
+    <a class="btn" href="./xtreinos.html">🏆 VER CLASSIFICAÇÃO</a>
   </div>
 </section>
 
@@ -484,31 +407,17 @@ footer a {
   </p>
 
   <div class="xt-days">
-    <div class="xt-day">
-      SEGUNDA-FEIRA
-      <span>4 quedas</span>
-    </div>
-
-    <div class="xt-day">
-      QUARTA-FEIRA
-      <span>4 quedas</span>
-    </div>
-
-    <div class="xt-day">
-      SEXTA-FEIRA
-      <span>4 quedas</span>
-    </div>
+    <div class="xt-day">SEGUNDA-FEIRA<span>4 quedas</span></div>
+    <div class="xt-day">QUARTA-FEIRA<span>4 quedas</span></div>
+    <div class="xt-day">SEXTA-FEIRA<span>4 quedas</span></div>
   </div>
 
-  <a class="btn" href="./xtreinos.html">
-    🏆 ACESSAR TABELAS
-  </a>
+  <a class="btn" href="./xtreinos.html">🏆 ACESSAR TABELAS</a>
 </section>
 
 <section class="card" id="inscricao">
   <span class="eyebrow">INSCRIÇÕES ONLINE</span>
   <h2>Inscrever minha LINE</h2>
-
   <p>Envie sua inscrição para análise da organização.</p>
 
   <form id="register">
@@ -520,10 +429,8 @@ footer a {
 
       <label>
         Logo da LINE
-        <input
-          name="logo"
-          type="file"
-          accept="image/png,image/jpeg,image/webp">
+        <input name="logo" type="file"
+               accept="image/png,image/jpeg,image/webp">
       </label>
 
       <label>
@@ -557,10 +464,7 @@ footer a {
       </label>
     </div>
 
-    <p>
-      <button type="submit">ENVIAR INSCRIÇÃO</button>
-    </p>
-
+    <p><button type="submit">ENVIAR INSCRIÇÃO</button></p>
     <p id="regmsg" class="notice" role="status"></p>
   </form>
 </section>
@@ -568,7 +472,6 @@ footer a {
 <section class="card" id="slots">
   <span class="eyebrow">EQUIPES CONFIRMADAS</span>
   <h2>Slots do XT</h2>
-
   <div class="slots" id="slotsgrid"></div>
 
   <h3>Equipes reservas</h3>
@@ -613,7 +516,6 @@ footer a {
 
 <section class="card" id="regras">
   <h2>📋 Regras e mapas</h2>
-
   <p id="rules" style="white-space:pre-wrap"></p>
 
   <div class="grid">
@@ -631,21 +533,15 @@ footer a {
   <form id="loginform">
     <label>
       E-mail do administrador
-      <input
-        id="adminemail"
-        type="email"
-        autocomplete="username"
-        required>
+      <input id="adminemail" type="email"
+             autocomplete="username" required>
     </label>
 
     <p>
       <label>
         Senha
-        <input
-          id="adminpassword"
-          type="password"
-          autocomplete="current-password"
-          required>
+        <input id="adminpassword" type="password"
+               autocomplete="current-password" required>
       </label>
     </p>
 
@@ -676,12 +572,8 @@ footer a {
 
           <label>
             Limite de equipes
-            <input
-              id="capacity"
-              type="number"
-              min="1"
-              max="100"
-              required>
+            <input id="capacity" type="number"
+                   min="1" max="100" required>
           </label>
         </div>
 
@@ -692,9 +584,7 @@ footer a {
           </label>
         </p>
 
-        <button type="submit">
-          SALVAR CONFIGURAÇÕES
-        </button>
+        <button type="submit">SALVAR CONFIGURAÇÕES</button>
       </form>
     </div>
 
@@ -712,10 +602,8 @@ footer a {
 
           <label>
             Logo
-            <input
-              name="logo"
-              type="file"
-              accept="image/png,image/jpeg,image/webp">
+            <input name="logo" type="file"
+                   accept="image/png,image/jpeg,image/webp">
           </label>
 
           <label>
@@ -725,18 +613,13 @@ footer a {
 
           <label>
             Descrição
-            <input
-              name="description"
-              id="partnerdescription">
+            <input name="description" id="partnerdescription">
           </label>
         </div>
 
         <p>
           <button type="submit">SALVAR PARCERIA</button>
-          <button
-            id="cancelpartner"
-            type="button"
-            class="secondary">
+          <button id="cancelpartner" type="button" class="secondary">
             LIMPAR
           </button>
         </p>
@@ -755,16 +638,11 @@ footer a {
 
       <label>
         Digite FINALIZAR XT
-        <input
-          id="confirmfinish"
-          placeholder="FINALIZAR XT">
+        <input id="confirmfinish" placeholder="FINALIZAR XT">
       </label>
 
       <p>
-        <button
-          id="finish"
-          type="button"
-          class="danger">
+        <button id="finish" type="button" class="danger">
           FINALIZAR XT
         </button>
       </p>
@@ -773,16 +651,12 @@ footer a {
     <p id="adminmsg" class="notice"></p>
   </div>
 </section>
-
 </main>
 
 <footer>
   DEMꓳN SLꓥYER • XTREINO FREE FIRE
-
   <p>
-    <a href="./xtreinos.html">
-      🏆 CLASSIFICAÇÃO GERAL
-    </a>
+    <a href="./xtreinos.html">🏆 CLASSIFICAÇÃO GERAL</a>
   </p>
 </footer>
 
@@ -833,39 +707,22 @@ function logoHTML(src) {
 async function image(file) {
   if (!file || !file.size) return "";
 
-  if (![
-    "image/jpeg",
-    "image/png",
-    "image/webp"
-  ].includes(file.type)) {
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
     throw Error("Formato de imagem inválido.");
   }
 
   const bitmap = await createImageBitmap(file);
-
   const scale = Math.min(
     1,
     180 / Math.max(bitmap.width, bitmap.height)
   );
 
   const canvas = document.createElement("canvas");
-
-  canvas.width = Math.max(
-    1,
-    Math.round(bitmap.width * scale)
-  );
-
-  canvas.height = Math.max(
-    1,
-    Math.round(bitmap.height * scale)
-  );
+  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
 
   canvas.getContext("2d").drawImage(
-    bitmap,
-    0,
-    0,
-    canvas.width,
-    canvas.height
+    bitmap, 0, 0, canvas.width, canvas.height
   );
 
   bitmap.close();
@@ -886,9 +743,7 @@ async function image(file) {
 }
 
 function approved() {
-  return state.teams.filter(
-    t => t.status === "approved"
-  );
+  return state.teams.filter(t => t.status === "approved");
 }
 
 function render() {
@@ -896,12 +751,7 @@ function render() {
   const capacity = Number(state.config.capacity) || 12;
 
   $("#occupied").textContent = teams.length;
-
-  $("#available").textContent = Math.max(
-    0,
-    capacity - teams.length
-  );
-
+  $("#available").textContent = Math.max(0, capacity - teams.length);
   $("#rules").textContent = state.config.rules;
 
   $("#slotsgrid").innerHTML = Array.from(
@@ -911,12 +761,8 @@ function render() {
 
       return `
         <div class="slot">
-          <span class="num">
-            ${String(i + 1).padStart(2, "0")}
-          </span>
-
+          <span class="num">${String(i + 1).padStart(2, "0")}</span>
           ${t ? logoHTML(t.logo) : ""}
-
           <div>
             <b>${t ? esc(t.team) : "VAGA LIVRE"}</b>
             <div class="tag">
@@ -928,22 +774,16 @@ function render() {
     }
   ).join("");
 
-  const reserves = state.teams.filter(
-    t => t.status === "reserve"
-  );
+  const reserves = state.teams.filter(t => t.status === "reserve");
 
   $("#reserveslist").innerHTML = reserves.length
-    ? reserves.map(
-        t => `<p>🔴 ${esc(t.team)}</p>`
-      ).join("")
+    ? reserves.map(t => `<p>🔴 ${esc(t.team)}</p>`).join("")
     : "<p>Nenhuma reserva.</p>";
 
   const ranking = [...teams].sort(
     (a, b) =>
-      (Number(b.points) || 0) -
-      (Number(a.points) || 0) ||
-      (Number(b.kills) || 0) -
-      (Number(a.kills) || 0)
+      (Number(b.points) || 0) - (Number(a.points) || 0) ||
+      (Number(b.kills) || 0) - (Number(a.kills) || 0)
   );
 
   $("#rankbody").innerHTML = ranking.length
@@ -999,23 +839,19 @@ function render() {
       </div>
     `).join("") || "<p>Nenhum XT finalizado.</p>";
 
-  $("#partnerslist").innerHTML = state.partners.map(
-    p => `
-      <div class="partner">
-        ${logoHTML(p.logo)}
-        <h3>${esc(p.name)}</h3>
-        <p>${esc(p.description)}</p>
-
-        ${
-          /^https:\/\//i.test(p.url || "")
-            ? `<a href="${esc(p.url)}"
-                 target="_blank"
-                 rel="noopener noreferrer">VISITAR</a>`
-            : ""
-        }
-      </div>
-    `
-  ).join("") || "<p>Nenhuma parceria cadastrada.</p>";
+  $("#partnerslist").innerHTML = state.partners.map(p => `
+    <div class="partner">
+      ${logoHTML(p.logo)}
+      <h3>${esc(p.name)}</h3>
+      <p>${esc(p.description)}</p>
+      ${
+        /^https:\/\//i.test(p.url || "")
+          ? `<a href="${esc(p.url)}" target="_blank"
+                rel="noopener noreferrer">VISITAR</a>`
+          : ""
+      }
+    </div>
+  `).join("") || "<p>Nenhuma parceria cadastrada.</p>";
 
   if (admin) renderAdmin();
 }
@@ -1025,8 +861,10 @@ function renderAdmin() {
   $("#capacity").value = state.config.capacity;
   $("#rulesinput").value = state.config.rules;
 
-  $("#adminteams").innerHTML = state.registrations.map(
-    t => `
+  $("#adminteams").innerHTML = state.registrations.map(t => {
+    const score = state.teams.find(x => x.id === t.id);
+
+    return `
       <div class="team" data-id="${esc(t.id)}">
         <h3>
           ${esc(t.team)}
@@ -1044,15 +882,12 @@ function renderAdmin() {
 
         <div class="actions">
           <button data-action="approved">APROVAR</button>
-
           <button data-action="reserve" class="secondary">
             RESERVA
           </button>
-
           <button data-action="rejected" class="secondary">
             RECUSAR
           </button>
-
           <button data-action="delete" class="danger">
             EXCLUIR
           </button>
@@ -1061,47 +896,20 @@ function renderAdmin() {
         <div class="grid">
           <label>
             Colocação
-            <input
-              class="placement"
-              type="number"
-              min="0"
-              value="${
-                Number(
-                  state.teams.find(
-                    x => x.id === t.id
-                  )?.placement
-                ) || 0
-              }">
+            <input class="placement" type="number" min="0"
+                   value="${Number(score?.placement) || 0}">
           </label>
 
           <label>
             Abates
-            <input
-              class="kills"
-              type="number"
-              min="0"
-              value="${
-                Number(
-                  state.teams.find(
-                    x => x.id === t.id
-                  )?.kills
-                ) || 0
-              }">
+            <input class="kills" type="number" min="0"
+                   value="${Number(score?.kills) || 0}">
           </label>
 
           <label>
             Total
-            <input
-              class="points"
-              type="number"
-              min="0"
-              value="${
-                Number(
-                  state.teams.find(
-                    x => x.id === t.id
-                  )?.points
-                ) || 0
-              }">
+            <input class="points" type="number" min="0"
+                   value="${Number(score?.points) || 0}">
           </label>
         </div>
 
@@ -1111,28 +919,20 @@ function renderAdmin() {
           </button>
         </p>
       </div>
-    `
-  ).join("") || "<p>Nenhuma inscrição.</p>";
+    `;
+  }).join("") || "<p>Nenhuma inscrição.</p>";
 
-  $("#adminpartners").innerHTML = state.partners.map(
-    p => `
-      <div class="team">
-        <b>${esc(p.name)}</b>
-
-        <div class="actions">
-          <button data-edit="${esc(p.id)}">
-            EDITAR
-          </button>
-
-          <button
-            data-remove="${esc(p.id)}"
-            class="danger">
-            EXCLUIR
-          </button>
-        </div>
+  $("#adminpartners").innerHTML = state.partners.map(p => `
+    <div class="team">
+      <b>${esc(p.name)}</b>
+      <div class="actions">
+        <button data-edit="${esc(p.id)}">EDITAR</button>
+        <button data-remove="${esc(p.id)}" class="danger">
+          EXCLUIR
+        </button>
       </div>
-    `
-  ).join("");
+    </div>
+  `).join("");
 }
 
 XT.watchPublic(
@@ -1194,7 +994,6 @@ $("#register").onsubmit = async e => {
 
   const form = e.currentTarget;
   const button = form.querySelector("button");
-
   button.disabled = true;
 
   try {
@@ -1202,21 +1001,14 @@ $("#register").onsubmit = async e => {
     const team = {};
 
     for (const key of [
-      "name",
-      "captain",
-      "phone",
-      "rush1",
-      "rush2",
-      "grenade",
-      "support"
+      "name", "captain", "phone", "rush1",
+      "rush2", "grenade", "support"
     ]) {
       team[key] = String(f.get(key) || "").trim();
     }
 
     team.logo = await image(f.get("logo"));
-
     await XT.register(team);
-
     form.reset();
 
     message(
@@ -1232,7 +1024,6 @@ $("#register").onsubmit = async e => {
 
 $("#adminteams").onclick = async e => {
   const btn = e.target.closest("button[data-action]");
-
   if (!btn || !admin) return;
 
   const row = btn.closest("[data-id]");
@@ -1244,9 +1035,7 @@ $("#adminteams").onclick = async e => {
 
     if (action === "delete") {
       if (!confirm("Excluir esta equipe?")) return;
-
       await XT.deleteTeam(id);
-
     } else if (action === "score") {
       await XT.saveScore(
         id,
@@ -1254,13 +1043,11 @@ $("#adminteams").onclick = async e => {
         row.querySelector(".kills").value,
         row.querySelector(".points").value
       );
-
     } else {
       await XT.setStatus(id, action);
     }
 
     message("#adminmsg", "Alteração salva.");
-
   } catch (err) {
     alert(err.message);
   } finally {
@@ -1297,10 +1084,7 @@ $("#partnerform").onsubmit = async e => {
   try {
     const f = new FormData(e.currentTarget);
     const id = $("#partnerid").value;
-
-    const old = state.partners.find(
-      p => p.id === id
-    );
+    const old = state.partners.find(p => p.id === id);
 
     await XT.savePartner({
       id,
@@ -1313,9 +1097,7 @@ $("#partnerform").onsubmit = async e => {
     });
 
     resetPartner();
-
     message("#adminmsg", "Parceria salva.");
-
   } catch (err) {
     alert(err.message);
   }
@@ -1326,20 +1108,14 @@ $("#adminpartners").onclick = async e => {
   const remove = e.target.closest("[data-remove]");
 
   if (edit) {
-    const p = state.partners.find(
-      x => x.id === edit.dataset.edit
-    );
-
+    const p = state.partners.find(x => x.id === edit.dataset.edit);
     if (!p) return;
 
     $("#partnerid").value = p.id;
     $("#partnername").value = p.name;
     $("#partnerurl").value = p.url || "";
     $("#partnerdescription").value = p.description || "";
-
-    $("#partnerform").scrollIntoView({
-      behavior: "smooth"
-    });
+    $("#partnerform").scrollIntoView({ behavior: "smooth" });
   }
 
   if (remove && confirm("Excluir parceria?")) {
@@ -1362,15 +1138,12 @@ $("#finish").onclick = async () => {
     );
 
     $("#confirmfinish").value = "";
-
     message("#adminmsg", result.message);
     alert(result.message);
-
   } catch (err) {
     alert(err.message);
   }
 };
 </script>
-
 </body>
 </html>
