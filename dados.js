@@ -1,4 +1,3 @@
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 
 import {
@@ -85,6 +84,30 @@ function toTeam(snapshot) {
     id: snapshot.id,
     ...snapshot.data()
   };
+}
+
+function sortedPublicTeams(teams) {
+  const statusOrder = { approved: 0, reserve: 1, hidden: 2 };
+
+  return teams.slice().sort((a, b) => {
+    const statusDifference =
+      (statusOrder[a.status] ?? 3) - (statusOrder[b.status] ?? 3);
+
+    if (statusDifference !== 0) return statusDifference;
+
+    if (a.status === "approved") {
+      const orderA = Number(a.approvalOrder) || Number.MAX_SAFE_INTEGER;
+      const orderB = Number(b.approvalOrder) || Number.MAX_SAFE_INTEGER;
+
+      if (orderA !== orderB) return orderA - orderB;
+    }
+
+    const createdA = a.createdAt?.toMillis?.() || 0;
+    const createdB = b.createdAt?.toMillis?.() || 0;
+
+    return createdA - createdB ||
+      String(a.team).localeCompare(String(b.team));
+  });
 }
 
 function sortedRanking(teams) {
@@ -206,7 +229,7 @@ const XT = {
 
     unsubs.push(
       onSnapshot(col("publicTeams"), snap => {
-        data.teams = snap.docs.map(toTeam);
+        data.teams = sortedPublicTeams(snap.docs.map(toTeam));
         emit();
       }, onError)
     );
@@ -326,6 +349,9 @@ const XT = {
     const team = snap.data();
     const publicRef = doc(db, "publicTeams", id);
 
+    let nextApprovalOrder = null;
+    const legacyOrderUpdates = [];
+
     if (status === "approved") {
       const configSnap = await getDoc(doc(db, "settings", "xt"));
 
@@ -336,31 +362,101 @@ const XT = {
       );
 
       const publicSnap = await getDocs(col("publicTeams"));
-
-      const approved = publicSnap.docs.filter(s =>
+      const approvedDocs = publicSnap.docs.filter(s =>
         s.id !== id && s.data().status === "approved"
-      ).length;
+      );
 
-      if (approved >= capacity) {
+      if (approvedDocs.length >= capacity) {
         throw Error("Todas as vagas confirmadas estão ocupadas.");
       }
+
+      // Migra as lines antigas sem posição usando a data original da inscrição.
+      const usedOrders = new Set();
+
+      for (const approvedDoc of approvedDocs) {
+        const order = approvedDoc.data().approvalOrder;
+
+        if (Number.isInteger(order) && order > 0) {
+          usedOrders.add(order);
+        }
+      }
+
+      const legacyDocs = approvedDocs.filter(s =>
+        !Number.isInteger(s.data().approvalOrder)
+      );
+
+      const legacyWithDates = await Promise.all(legacyDocs.map(async s => {
+        const registrationSnap = await getDoc(
+          doc(db, "registrations", s.id)
+        );
+
+        const createdAt = registrationSnap.exists()
+          ? registrationSnap.data().createdAt?.toMillis?.() || 0
+          : 0;
+
+        return { snapshot: s, createdAt };
+      }));
+
+      legacyWithDates.sort((a, b) =>
+        a.createdAt - b.createdAt ||
+        a.snapshot.id.localeCompare(b.snapshot.id)
+      );
+
+      let candidateOrder = 1;
+
+      for (const item of legacyWithDates) {
+        while (usedOrders.has(candidateOrder)) {
+          candidateOrder += 1;
+        }
+
+        legacyOrderUpdates.push({
+          id: item.snapshot.id,
+          order: candidateOrder
+        });
+
+        usedOrders.add(candidateOrder);
+        candidateOrder += 1;
+      }
+
+      nextApprovalOrder = Math.max(0, ...usedOrders) + 1;
     }
 
     const batch = writeBatch(db);
+
+    for (const item of legacyOrderUpdates) {
+      batch.update(doc(db, "publicTeams", item.id), {
+        approvalOrder: item.order
+      });
+    }
+
     batch.update(ref, { status });
 
     if (status === "approved" || status === "reserve") {
       const current = await getDoc(publicRef);
       const old = current.exists() ? current.data() : {};
 
-      batch.set(publicRef, {
+      const publicData = {
         team: team.team,
         logo: team.logo || "",
         status,
         placement: Number(old.placement) || 0,
         kills: Number(old.kills) || 0,
         points: Number(old.points) || 0
-      });
+      };
+
+      if (status === "approved") {
+        if (
+          old.status === "approved" &&
+          Number.isInteger(old.approvalOrder)
+        ) {
+          // Reaprovar uma line confirmada mantém sua posição.
+          publicData.approvalOrder = old.approvalOrder;
+        } else {
+          publicData.approvalOrder = nextApprovalOrder;
+        }
+      }
+
+      batch.set(publicRef, publicData);
 
     } else {
       batch.delete(publicRef);
@@ -494,6 +590,7 @@ const XT = {
       .sort((a, b) => {
         const ta = a.finishedAt?.toMillis?.() || 0;
         const tb = b.finishedAt?.toMillis?.() || 0;
+
         return tb - ta;
       });
   },
@@ -616,6 +713,7 @@ const XT = {
       if (value && typeof value.toDate === "function") {
         return value.toDate().toISOString();
       }
+
       return value;
     }, 2);
   }
