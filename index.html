@@ -462,6 +462,21 @@ footer a { color: var(--accent); }
         Suporte *
         <input name="support" required maxlength="40">
       </label>
+
+      <label>
+        1ª Reserva
+        <input name="reserve1" maxlength="40" autocomplete="off">
+      </label>
+
+      <label>
+        2ª Reserva
+        <input name="reserve2" maxlength="40" autocomplete="off">
+      </label>
+
+      <label>
+        3ª Reserva
+        <input name="reserve3" maxlength="40" autocomplete="off">
+      </label>
     </div>
 
     <p><button type="submit">ENVIAR INSCRIÇÃO</button></p>
@@ -787,7 +802,13 @@ function renderAdmin() {
           Rush 1: ${esc(t.rush)}<br>
           Rush 2: ${esc(t.rush2)}<br>
           Granadeiro: ${esc(t.grenadier)}<br>
-          Suporte: ${esc(t.support)}
+          Suporte: ${esc(t.support)}<br>
+          Reservas: ${
+            [t.reserve1, t.reserve2, t.reserve3]
+              .filter(Boolean)
+              .map(esc)
+              .join(", ") || "Nenhuma"
+          }
         </p>
 
         <div class="actions">
@@ -912,7 +933,8 @@ $("#register").onsubmit = async e => {
 
     for (const key of [
       "name", "captain", "phone", "rush1",
-      "rush2", "grenade", "support"
+      "rush2", "grenade", "support",
+      "reserve1", "reserve2", "reserve3"
     ]) {
       team[key] = String(f.get(key) || "").trim();
     }
