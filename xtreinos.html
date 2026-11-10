@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -20,8 +20,13 @@
       --red: #a51026;
     }
 
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
 
     body {
       margin: 0;
@@ -29,25 +34,27 @@
       font-family: Inter, Arial, sans-serif;
       color: var(--text);
       background:
-        linear-gradient(rgba(10,4,6,.86),rgba(10,4,6,.97)),
+        linear-gradient(
+          rgba(10, 4, 6, 0.86),
+          rgba(10, 4, 6, 0.97)
+        ),
         url("./tanjiro.png") center top / cover fixed,
         var(--bg);
     }
 
     header {
       border-bottom: 1px solid var(--border);
-      background: rgba(18,5,9,.95);
+      background: rgba(18, 5, 9, 0.95);
       padding: 24px 20px;
       text-align: center;
     }
 
     .brand {
-      font-size: clamp(24px,5vw,40px);
+      font-size: clamp(24px, 5vw, 40px);
       font-weight: 900;
       letter-spacing: 2px;
       color: var(--purple);
       margin: 0;
-      text-shadow: 0 0 22px rgba(220,25,48,.5);
     }
 
     .subtitle {
@@ -73,13 +80,14 @@
       font-weight: bold;
     }
 
-    nav a.active, nav a:hover {
+    nav a.active,
+    nav a:hover {
       background: #c51e34;
       border-color: var(--purple);
     }
 
     main {
-      width: min(1100px,94%);
+      width: min(1100px, 94%);
       margin: 32px auto;
     }
 
@@ -88,13 +96,13 @@
       padding: 35px 20px;
       border-radius: 18px;
       border: 1px solid var(--border);
-      background: rgba(24,9,14,.95);
+      background: rgba(24, 9, 14, 0.95);
       margin-bottom: 25px;
     }
 
     .hero h2 {
       margin: 0 0 12px;
-      font-size: clamp(24px,5vw,36px);
+      font-size: clamp(24px, 5vw, 36px);
       color: var(--purple);
     }
 
@@ -104,7 +112,7 @@
     }
 
     .section {
-      background: rgba(24,10,15,.96);
+      background: rgba(24, 10, 15, 0.96);
       border: 1px solid var(--border);
       border-radius: 16px;
       padding: 22px;
@@ -118,7 +126,7 @@
 
     .days {
       display: grid;
-      grid-template-columns: repeat(3,1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 14px;
       margin-bottom: 24px;
     }
@@ -126,7 +134,7 @@
     .day {
       padding: 22px 12px;
       border-radius: 15px;
-      background: rgba(43,15,22,.96);
+      background: rgba(43, 15, 22, 0.96);
       border: 1px solid var(--border);
       text-align: center;
     }
@@ -143,7 +151,9 @@
       color: var(--muted);
     }
 
-    .table-scroll, .item { overflow-x: auto; }
+    .table-scroll {
+      overflow-x: auto;
+    }
 
     table {
       width: 100%;
@@ -163,10 +173,12 @@
       text-transform: uppercase;
     }
 
-    td { font-size: 14px; }
+    td {
+      font-size: 14px;
+    }
 
     tbody tr:hover {
-      background: rgba(255,60,75,.09);
+      background: rgba(255, 60, 75, 0.09);
     }
 
     .item {
@@ -175,6 +187,7 @@
       border: 1px solid var(--border);
       border-radius: 14px;
       margin-bottom: 15px;
+      overflow-x: auto;
     }
 
     .item h3 {
@@ -182,15 +195,22 @@
       margin-top: 0;
     }
 
-    .item p { color: var(--muted); }
-    .item table { min-width: 420px; }
+    .item p {
+      color: var(--muted);
+    }
+
+    .item table {
+      min-width: 420px;
+    }
 
     .admin-box {
       border: 1px solid #a12c3b;
-      background: rgba(36,10,17,.97);
+      background: rgba(36, 10, 17, 0.97);
     }
 
-    .hide { display: none !important; }
+    .hide {
+      display: none !important;
+    }
 
     form {
       display: grid;
@@ -199,7 +219,7 @@
 
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(2,1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 15px;
     }
 
@@ -242,10 +262,22 @@
       cursor: pointer;
     }
 
-    button:hover { filter: brightness(1.15); }
-    button:disabled { opacity: .5; cursor: not-allowed; }
-    .secondary { background: #63232e; }
-    .danger { background: var(--red); }
+    button:hover {
+      filter: brightness(1.15);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .secondary {
+      background: #63232e;
+    }
+
+    .danger {
+      background: var(--red);
+    }
 
     .notice {
       color: var(--muted);
@@ -294,12 +326,14 @@
 
     .finish-buttons {
       display: grid;
-      grid-template-columns: repeat(2,1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 12px;
       margin-top: 18px;
     }
 
-    .finish-buttons button { min-height: 50px; }
+    .finish-buttons button {
+      min-height: 50px;
+    }
 
     footer {
       padding: 30px 15px;
@@ -308,16 +342,33 @@
       border-top: 1px solid var(--border);
     }
 
-    @media(max-width:650px) {
-      .days, .form-grid, .finish-buttons {
+    @media (max-width: 650px) {
+      .days,
+      .form-grid,
+      .finish-buttons {
         grid-template-columns: 1fr;
       }
 
-      .section { padding: 16px; }
-      main { width: 96%; }
-      nav a { flex: 1; text-align: center; }
-      .hero { padding: 24px 14px; }
-      body { background-attachment: scroll; }
+      .section {
+        padding: 16px;
+      }
+
+      main {
+        width: 96%;
+      }
+
+      nav a {
+        flex: 1;
+        text-align: center;
+      }
+
+      .hero {
+        padding: 24px 14px;
+      }
+
+      body {
+        background-attachment: scroll;
+      }
     }
   </style>
 </head>
@@ -326,13 +377,27 @@
 
   <header>
     <h1 class="brand">DEMꓳN SLꓥYER</h1>
-    <p class="subtitle">SISTEMA OFICIAL DE XTREINOS E CLASSIFICAÇÃO</p>
+
+    <p class="subtitle">
+      SISTEMA OFICIAL DE XTREINOS E CLASSIFICAÇÃO
+    </p>
 
     <nav>
-      <a href="./index.html">📝 INSCRIÇÕES</a>
-      <a href="./xtreinos.html" class="active">🏆 XTREINOS</a>
-      <a href="#rankingSection">📊 TABELAS</a>
-      <a href="#adminSection">🔐 ÁREA ADM</a>
+      <a href="./index.html">
+        📝 INSCRIÇÕES
+      </a>
+
+      <a href="./xtreinos.html" class="active">
+        🏆 XTREINOS
+      </a>
+
+      <a href="#rankingSection">
+        📊 TABELAS
+      </a>
+
+      <a href="#adminSection">
+        🔐 ÁREA ADM
+      </a>
     </nav>
   </header>
 
@@ -340,6 +405,7 @@
 
     <section class="hero">
       <h2>🏆 XTREINOS DEMꓳN SLꓥYER</h2>
+
       <p>
         Acompanhe as tabelas de segunda, quarta e sexta-feira,
         a classificação semanal e o ranking geral acumulado
@@ -359,10 +425,12 @@
         <strong>SEGUNDA</strong>
         <span>4 QUEDAS • LBFF 2021</span>
       </div>
+
       <div class="day">
         <strong>QUARTA</strong>
         <span>4 QUEDAS • LBFF 2021</span>
       </div>
+
       <div class="day">
         <strong>SEXTA</strong>
         <span>4 QUEDAS • LBFF 2021</span>
@@ -371,13 +439,15 @@
 
     <section class="section" id="rankingSection">
       <h2>🥇 RANKING DAS EQUIPES</h2>
+
       <p class="notice">
         Escolha o dia e o tipo de classificação.
-        A tabela semanal pode ser reiniciada pelo ADM.
-        A classificação geral mantém os pontos das semanas anteriores.
+        A classificação geral acumula cada dia separadamente:
+        segundas com segundas, quartas com quartas e sextas com sextas.
       </p>
 
       <div id="xtDayTabs" class="tabs"></div>
+
       <div id="xtModeTabs" class="tabs"></div>
 
       <div class="table-scroll" id="ranking">
@@ -387,8 +457,9 @@
 
     <section class="section" id="historySection">
       <h2>📋 RESULTADOS E HISTÓRICO</h2>
+
       <p class="notice">
-        Consulte as tabelas finais e pontuações.
+        Consulte as tabelas finais com pontos, abates e booyahs.
         Selecione HISTÓRICO acima para consultar
         os resultados arquivados das semanas anteriores.
       </p>
@@ -400,37 +471,52 @@
 
     <section class="section admin-box" id="adminSection">
       <h2>🔐 PAINEL ADMINISTRATIVO</h2>
+
       <p class="notice">
-        Acesso exclusivo da organização para cadastrar pontuações,
-        finalizar XTREINOS e gerenciar as tabelas.
+        Acesso exclusivo da organização para cadastrar
+        resultados, finalizar XTREINOS e gerenciar as tabelas.
       </p>
 
       <div id="xtLoginBox">
         <form id="xtLoginForm">
+
           <label>
             E-mail do administrador
-            <input type="email" id="xtEmail"
+            <input
+              type="email"
+              id="xtEmail"
               autocomplete="username"
-              placeholder="Digite seu e-mail" required>
+              placeholder="Digite seu e-mail"
+              required
+            >
           </label>
 
           <label>
             Senha
-            <input type="password" id="xtPassword"
+            <input
+              type="password"
+              id="xtPassword"
               autocomplete="current-password"
-              placeholder="Digite sua senha" required>
+              placeholder="Digite sua senha"
+              required
+            >
           </label>
 
-          <button type="submit">ENTRAR COMO ADM</button>
+          <button type="submit">
+            ENTRAR COMO ADM
+          </button>
+
         </form>
       </div>
 
       <div id="xtAdminPanel" class="hide">
+
         <h3>⚙️ COLAR PONTUAÇÃO TOTAL</h3>
+
         <p class="notice">
-          Cole uma linha por equipe com o nome e os pontos já somados.
-          A tabela coloca automaticamente a maior pontuação no 1º lugar.
-          Para corrigir, cole a lista atualizada para a mesma data e dia.
+          Cole uma linha por equipe com os pontos totais, abates e booyahs.
+          A tabela ordena automaticamente pela pontuação. Cada dia acumula
+          separado: segunda com segunda, quarta com quarta e sexta com sexta.
         </p>
 
         <form id="xtBulkScoreForm">
@@ -451,14 +537,15 @@
           </div>
 
           <label>
-            Equipe e pontuação total (uma equipe por linha)
+            Equipe, pontos, abates e booyahs (uma equipe por linha)
             <textarea id="bulkScores" rows="10" required
-              placeholder="AIMERZ&#9;125&#10;EQUIPE EXEMPLO&#9;98"></textarea>
+              placeholder="AIMERZ PONTOS104 KILL 61 3 BOOYAH&#10;EQUIPE CAOS PONTOS69 KILL 36&#10;FX AMIGOS PONTOS54 KILL 20 1 BOOYAH"></textarea>
           </label>
 
           <p class="notice">
-            Formato: <strong>Nome da equipe [TAB] Pontuação</strong>.
-            Você pode copiar as duas colunas direto de uma planilha.
+            Formato aceito: <strong>EQUIPE PONTOS104 KILL 61 3 BOOYAH</strong>.
+            Sem booyah, pode deixar esse trecho de fora. Também aceita colunas
+            copiadas de uma planilha: Equipe [TAB] Pontos [TAB] Abates [TAB] Booyahs.
             Use o nome igual ao da equipe confirmada no site.
           </p>
 
@@ -469,30 +556,40 @@
         <p class="notice">
           A pontuação digitada é salva como total final da equipe naquele XT.
           Ao colar novamente para a mesma data e dia, a lista anterior é substituída.
+          No ranking geral, as segundas, quartas e sextas ficam em tabelas separadas.
         </p>
 
         <section class="finish-box" id="xtFinishControls">
           <h3>🏁 FINALIZAR XTREINOS</h3>
+
           <p class="notice">
-            O ADM pode finalizar somente um dia ou encerrar a semana inteira.
+            O ADM pode finalizar somente um dia ou
+            encerrar a semana inteira.
           </p>
+
           <p class="notice">
-            Os resultados serão salvos no histórico.
-            As tabelas semanais serão reiniciadas,
-            mas a classificação geral continuará acumulando os pontos.
+            As tabelas do dia serão salvas no histórico e removidas da semana atual.
+            A classificação geral continuará acumulando cada dia da semana separadamente.
           </p>
 
           <div class="finish-buttons">
             <button type="button" data-finish="segunda">
               📅 FINALIZAR SEGUNDA
             </button>
+
             <button type="button" data-finish="quarta">
               📅 FINALIZAR QUARTA
             </button>
+
             <button type="button" data-finish="sexta">
               📅 FINALIZAR SEXTA
             </button>
-            <button type="button" class="danger" data-finish="semana">
+
+            <button
+              type="button"
+              class="danger"
+              data-finish="semana"
+            >
               🏁 FINALIZAR SEMANA
             </button>
           </div>
@@ -503,10 +600,15 @@
         </section>
 
         <div style="margin-top:20px">
-          <button type="button" class="secondary" id="xtLogout">
+          <button
+            type="button"
+            class="secondary"
+            id="xtLogout"
+          >
             SAIR DO PAINEL
           </button>
         </div>
+
       </div>
 
       <p id="xtMessage" class="notice" role="status"></p>
@@ -520,5 +622,6 @@
   </footer>
 
   <script type="module" src="./xtreinos.js"></script>
+
 </body>
 </html>
