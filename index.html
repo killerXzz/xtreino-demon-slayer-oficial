@@ -478,37 +478,6 @@ footer a { color: var(--accent); }
   <div id="reserveslist"></div>
 </section>
 
-<section class="card" id="ranking">
-  <span class="eyebrow">COMPETIÇÃO</span>
-  <h2>🏆 Classificação do XT</h2>
-
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>LINE</th>
-          <th>Colocação</th>
-          <th>Abates</th>
-          <th>Total</th>
-        </tr>
-      </thead>
-      <tbody id="rankbody"></tbody>
-    </table>
-  </div>
-
-  <p>
-    <a class="btn" href="./xtreinos.html">
-      VER TABELAS DE SEGUNDA, QUARTA E SEXTA
-    </a>
-  </p>
-</section>
-
-<section class="card" id="historico">
-  <h2>📜 Histórico de XT</h2>
-  <div id="historylist"></div>
-</section>
-
 <section class="card" id="parcerias">
   <h2>🤝 Nossas parcerias</h2>
   <div class="partners" id="partnerslist"></div>
@@ -779,65 +748,6 @@ function render() {
   $("#reserveslist").innerHTML = reserves.length
     ? reserves.map(t => `<p>🔴 ${esc(t.team)}</p>`).join("")
     : "<p>Nenhuma reserva.</p>";
-
-  const ranking = [...teams].sort(
-    (a, b) =>
-      (Number(b.points) || 0) - (Number(a.points) || 0) ||
-      (Number(b.kills) || 0) - (Number(a.kills) || 0)
-  );
-
-  $("#rankbody").innerHTML = ranking.length
-    ? ranking.map((t, i) => `
-        <tr>
-          <td>${i + 1}º</td>
-          <td>${esc(t.team)}</td>
-          <td>${Number(t.placement) || 0}</td>
-          <td>${Number(t.kills) || 0}</td>
-          <td>${Number(t.points) || 0}</td>
-        </tr>
-      `).join("")
-    : '<tr><td colspan="5">Aguardando classificação.</td></tr>';
-
-  $("#historylist").innerHTML = [...state.history]
-    .sort(
-      (a, b) =>
-        (b.finishedAt?.seconds || 0) -
-        (a.finishedAt?.seconds || 0)
-    )
-    .map(h => `
-      <div class="admin-box">
-        <h3>${esc(h.event)}</h3>
-        <p>
-          Finalizado:
-          ${
-            h.finishedAt?.toDate?.().toLocaleString("pt-BR") ||
-            "Data indisponível"
-          }
-        </p>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>LINE</th>
-                <th>Abates</th>
-                <th>Pontos</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              ${(h.ranking || []).map(t => `
-                <tr>
-                  <td>${esc(t.team)}</td>
-                  <td>${Number(t.kills) || 0}</td>
-                  <td>${Number(t.points) || 0}</td>
-                </tr>
-              `).join("")}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    `).join("") || "<p>Nenhum XT finalizado.</p>";
 
   $("#partnerslist").innerHTML = state.partners.map(p => `
     <div class="partner">
