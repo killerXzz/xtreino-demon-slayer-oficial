@@ -159,8 +159,8 @@ function rankingFor(items) {
     }])
   );
 
-  // Uma tabela manual já contém os pontos somados daquele XTREINO.
-  // Evita somar novamente as quedas da mesma data e do mesmo dia.
+  // As tabelas manuais já têm os totais somados daquele dia.
+  // Evita somar também as quedas individuais da mesma data e dia.
   const manualEvents = new Set(
     items
       .filter(match => match.kind === 'manual')
@@ -173,7 +173,12 @@ function rankingFor(items) {
 
       if (match.kind === 'manual') {
         const points = Number(result.points);
-        if (!Number.isFinite(points) || points < 0) continue;
+        const kills = Number(result.kills || 0);
+        const booyahs = Number(result.booyahs || 0);
+
+        if (!Number.isFinite(points) || points < 0) {
+          continue;
+        }
 
         if (!totals.has(result.teamId)) {
           totals.set(result.teamId, {
@@ -187,13 +192,26 @@ function rankingFor(items) {
         }
 
         const team = totals.get(result.teamId);
+
         team.points += points;
+        team.kills += Number.isFinite(kills) && kills >= 0
+          ? kills
+          : 0;
+        team.booyahs += Number.isFinite(booyahs) && booyahs >= 0
+          ? booyahs
+          : 0;
         team.matches++;
+
         continue;
       }
 
-      if (manualEvents.has(`${match.date}_${match.day}`)) continue;
-      if (!validResult(result)) continue;
+      if (manualEvents.has(`${match.date}_${match.day}`)) {
+        continue;
+      }
+
+      if (!validResult(result)) {
+        continue;
+      }
 
       if (!totals.has(result.teamId)) {
         totals.set(result.teamId, {
@@ -207,6 +225,7 @@ function rankingFor(items) {
       }
 
       const team = totals.get(result.teamId);
+
       team.points += pointsFor(result.position, result.kills);
       team.kills += Number(result.kills);
       team.matches++;
@@ -509,20 +528,17 @@ function renderTabs() {
   }
 }
 
-function renderRanking() {
-  const target = $('ranking');
-  if (!target) return;
-
-  const rows = rankingFor(shownMatches());
-
-  target.innerHTML = `
+function rankingTable(rows) {
+  return `
     <div style="overflow-x:auto">
       <table>
         <thead>
           <tr>
-            <th>Posição</th>
+            <th>#</th>
             <th>Equipe</th>
-            <th>Pontuação total</th>
+            <th>Pontos</th>
+            <th>Abates</th>
+            <th>Booyahs</th>
           </tr>
         </thead>
         <tbody>
@@ -531,6 +547,8 @@ function renderRanking() {
               <td>${index + 1}º</td>
               <td>${esc(team.name)}</td>
               <td>${team.points}</td>
+              <td>${team.kills}</td>
+              <td>${team.booyahs}</td>
             </tr>
           `).join('')}
         </tbody>
@@ -538,6 +556,36 @@ function renderRanking() {
     </div>
     ${rows.length ? '' : '<p>Nenhuma equipe cadastrada.</p>'}
   `;
+}
+
+function renderRanking() {
+  const target = $('ranking');
+  if (!target) return;
+
+  const items = shownMatches();
+
+  // "Todos os dias" mostra uma tabela separada para cada dia.
+  if (selectedDay === 'geral') {
+    const sections = ['segunda', 'quarta', 'sexta'].map(day => {
+      const rows = rankingFor(
+        items.filter(match => match.day === day)
+      );
+
+      return `
+        <section style="margin:18px 0 28px">
+          <h3 style="color:${COLORS.bright}">
+            ${esc(days[day])}
+          </h3>
+          ${rankingTable(rows)}
+        </section>
+      `;
+    });
+
+    target.innerHTML = sections.join('');
+    return;
+  }
+
+  target.innerHTML = rankingTable(rankingFor(items));
 }
 
 function renderHistory() {
@@ -569,6 +617,8 @@ function renderHistory() {
                 <td>${index + 1}º</td>
                 <td>${esc(result.teamName)}</td>
                 <td>${esc(result.points)}</td>
+                <td>${esc(result.kills || 0)}</td>
+                <td>${esc(result.booyahs || 0)}</td>
               </tr>
             `).join('')
           : results
@@ -583,7 +633,7 @@ function renderHistory() {
               `).join('');
 
         const headings = manual
-          ? '<tr><th>Posição</th><th>Equipe</th><th>Pontuação total</th></tr>'
+          ? '<tr><th>#</th><th>Equipe</th><th>Pontos</th><th>Abates</th><th>Booyahs</th></tr>'
           : '<tr><th>Equipe</th><th>Posição</th><th>Abates</th><th>Pontos</th></tr>';
 
         const title = manual
@@ -984,11 +1034,11 @@ function teamKey(value) {
 }
 
 function parseBulkScores(text) {
-  const teamsByName = new Map(
+  const byName = new Map(
     teams.map(team => [teamKey(team.name), team])
   );
 
-  const usedTeams = new Set();
+  const used = new Set();
   const results = [];
 
   const lines = String(text || '')
@@ -1000,63 +1050,102 @@ function parseBulkScores(text) {
     .filter(item => item.line);
 
   if (!lines.length) {
-    throw Error('Cole pelo menos uma equipe e sua pontuação total.');
+    throw Error('Cole pelo menos uma equipe e seus pontos, abates e booyahs.');
   }
 
   for (const item of lines) {
-    const delimiter = item.line.includes('\t')
-      ? '\t'
-      : item.line.includes(';')
-        ? ';'
-        : item.line.includes('|')
-          ? '|'
-          : ',';
+    let teamName = '';
+    let pointsText = '';
+    let killsText = '0';
+    let booyahsText = '0';
 
-    const parts = item.line
-      .split(delimiter)
-      .map(part => part.trim());
+    // Formato: EQUIPE PONTOS104 KILL 61 3 BOOYAH
+    const detailMatch = item.line.match(
+      /^(.+?)\s+PONTOS\s*[:=]?\s*(\d+)\s+KILL\s*[:=]?\s*(\d+)(?:\s+(\d+)\s+BOOYAH)?\s*$/i
+    );
 
-    if (
-      item.number === 1 &&
-      parts.length === 2 &&
-      /^(equipe|line|time)$/i.test(parts[0]) &&
-      /^(pontos?|pontuação|pontuacao|total|pontuação total|pontuacao total)$/i.test(parts[1])
-    ) {
-      continue;
+    if (detailMatch) {
+      [
+        ,
+        teamName,
+        pointsText,
+        killsText,
+        booyahsText = '0'
+      ] = detailMatch;
+    } else {
+      // Também aceita colunas de planilha:
+      // Equipe [TAB] Pontos [TAB] Abates [TAB] Booyahs
+      const delimiter = item.line.includes('\t')
+        ? '\t'
+        : item.line.includes(';')
+          ? ';'
+          : item.line.includes('|')
+            ? '|'
+            : ',';
+
+      const parts = item.line
+        .split(delimiter)
+        .map(part => part.trim());
+
+      if (
+        item.number === 1 &&
+        parts.length >= 2 &&
+        /^(equipe|line|time)$/i.test(parts[0])
+      ) {
+        continue;
+      }
+
+      if (parts.length < 2 || parts.length > 4 || !parts[0]) {
+        throw Error(
+          `Linha ${item.number}: use Equipe PONTOS104 KILL 61 3 BOOYAH, ou colunas separadas por TAB.`
+        );
+      }
+
+      [
+        teamName,
+        pointsText,
+        killsText = '0',
+        booyahsText = '0'
+      ] = parts;
     }
 
-    if (parts.length !== 2 || !parts[0] || !parts[1]) {
-      throw Error(`Linha ${item.number}: use Equipe [TAB] Pontuação.`);
-    }
-
-    const team = teamsByName.get(teamKey(parts[0]));
+    const team = byName.get(teamKey(teamName));
 
     if (!team) {
       throw Error(
-        `Linha ${item.number}: equipe “${parts[0]}” não encontrada entre as equipes confirmadas.`
+        `Linha ${item.number}: equipe “${teamName}” não encontrada entre as equipes confirmadas.`
       );
     }
 
-    if (usedTeams.has(team.id)) {
+    if (used.has(team.id)) {
       throw Error(
         `Linha ${item.number}: a equipe “${team.name}” aparece mais de uma vez.`
       );
     }
 
-    const scoreText = parts[1].replace(/\s/g, '');
+    const points = Number(pointsText);
+    const kills = Number(killsText || 0);
+    const booyahs = Number(booyahsText || 0);
 
-    if (!/^\d+$/.test(scoreText)) {
+    if (
+      ![points, kills, booyahs].every(Number.isInteger) ||
+      points < 0 ||
+      kills < 0 ||
+      booyahs < 0
+    ) {
       throw Error(
-        `Linha ${item.number}: a pontuação de “${team.name}” precisa ser um número inteiro igual ou maior que zero.`
+        `Linha ${item.number}: pontos, abates e booyahs precisam ser números inteiros iguais ou maiores que zero.`
       );
     }
 
-    usedTeams.add(team.id);
+    used.add(team.id);
 
     results.push({
       teamId: team.id,
       teamName: team.name,
-      points: Number(scoreText)
+      points,
+      kills,
+      booyahs
     });
   }
 
@@ -1067,6 +1156,8 @@ function parseBulkScores(text) {
   return results.sort(
     (a, b) =>
       b.points - a.points ||
+      b.booyahs - a.booyahs ||
+      b.kills - a.kills ||
       a.teamName.localeCompare(b.teamName)
   );
 }
@@ -1090,9 +1181,11 @@ function renderBulkPreview() {
         <table>
           <thead>
             <tr>
-              <th>Posição</th>
+              <th>#</th>
               <th>Equipe</th>
-              <th>Pontuação total</th>
+              <th>Pontos</th>
+              <th>Abates</th>
+              <th>Booyahs</th>
             </tr>
           </thead>
           <tbody>
@@ -1101,6 +1194,8 @@ function renderBulkPreview() {
                 <td>${index + 1}º</td>
                 <td>${esc(row.teamName)}</td>
                 <td>${row.points}</td>
+                <td>${row.kills}</td>
+                <td>${row.booyahs}</td>
               </tr>
             `).join('')}
           </tbody>
@@ -1182,7 +1277,7 @@ $('xtBulkScoreForm')?.addEventListener(
       });
 
       message(
-        `Tabela salva! ${results.length} equipe(s) ordenadas pela pontuação total.`
+        `Tabela salva! ${results.length} equipe(s) ordenadas por pontos, com abates e booyahs registrados.`
       );
 
     } catch (error) {
@@ -1240,5 +1335,3 @@ $('matchHistory')?.addEventListener(
 
 createControls();
 renderAll();
-
-
