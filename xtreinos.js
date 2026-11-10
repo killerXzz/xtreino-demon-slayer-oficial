@@ -1,4 +1,3 @@
-
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
 import {
   getAuth,
@@ -119,7 +118,7 @@ function normalizeTeam(x) {
 
 function archiveMatches() {
   return archives.filter(
-    a => a.kind === 'match'
+    a => a.kind === 'match' || a.kind === 'manual'
   );
 }
 
@@ -150,23 +149,51 @@ function shownMatches() {
 
 function rankingFor(items) {
   const totals = new Map(
-    teams.map(t => [
-      t.id,
-      {
-        ...t,
-        points: 0,
-        kills: 0,
-        booyahs: 0,
-        matches: 0
-      }
-    ])
+    teams.map(team => [team.id, {
+      id: team.id,
+      name: team.name,
+      points: 0,
+      kills: 0,
+      booyahs: 0,
+      matches: 0
+    }])
+  );
+
+  // Uma tabela manual já contém os pontos somados daquele XTREINO.
+  // Evita somar novamente as quedas da mesma data e do mesmo dia.
+  const manualEvents = new Set(
+    items
+      .filter(match => match.kind === 'manual')
+      .map(match => `${match.date}_${match.day}`)
   );
 
   for (const match of items) {
     for (const result of match.results || []) {
-      if (!validResult(result) || !result.teamId) {
+      if (!result.teamId) continue;
+
+      if (match.kind === 'manual') {
+        const points = Number(result.points);
+        if (!Number.isFinite(points) || points < 0) continue;
+
+        if (!totals.has(result.teamId)) {
+          totals.set(result.teamId, {
+            id: result.teamId,
+            name: result.teamName || 'Equipe',
+            points: 0,
+            kills: 0,
+            booyahs: 0,
+            matches: 0
+          });
+        }
+
+        const team = totals.get(result.teamId);
+        team.points += points;
+        team.matches++;
         continue;
       }
+
+      if (manualEvents.has(`${match.date}_${match.day}`)) continue;
+      if (!validResult(result)) continue;
 
       if (!totals.has(result.teamId)) {
         totals.set(result.teamId, {
@@ -179,18 +206,13 @@ function rankingFor(items) {
         });
       }
 
-      const t = totals.get(result.teamId);
-
-      t.points += pointsFor(
-        result.position,
-        result.kills
-      );
-
-      t.kills += Number(result.kills);
-      t.matches++;
+      const team = totals.get(result.teamId);
+      team.points += pointsFor(result.position, result.kills);
+      team.kills += Number(result.kills);
+      team.matches++;
 
       if (Number(result.position) === 1) {
-        t.booyahs++;
+        team.booyahs++;
       }
     }
   }
@@ -369,7 +391,7 @@ function createControls() {
       <h2>🏁 Encerrar XTREINO</h2>
 
       <p>
-        Arquiva as quedas sem apagar equipes.
+        Arquiva as tabelas sem apagar equipes.
         A tabela semanal reinicia e a classificação
         geral continua acumulando.
       </p>
@@ -402,8 +424,6 @@ function createControls() {
     $('xtAdminPanel').append(box);
   }
 
-  /* Funciona com controles criados pelo JS
-     e também com os que já estão no HTML. */
   const finishBox = $('xtFinishControls');
 
   if (finishBox && !finishBox.dataset.listenerReady) {
@@ -500,35 +520,23 @@ function renderRanking() {
       <table>
         <thead>
           <tr>
-            <th>#</th>
+            <th>Posição</th>
             <th>Equipe</th>
-            <th>Pontos</th>
-            <th>Abates</th>
-            <th>Booyahs</th>
-            <th>Quedas</th>
+            <th>Pontuação total</th>
           </tr>
         </thead>
-
         <tbody>
-          ${rows.map((t, i) => `
+          ${rows.map((team, index) => `
             <tr>
-              <td>${i + 1}º</td>
-              <td>${esc(t.name)}</td>
-              <td>${t.points}</td>
-              <td>${t.kills}</td>
-              <td>${t.booyahs}</td>
-              <td>${t.matches}</td>
+              <td>${index + 1}º</td>
+              <td>${esc(team.name)}</td>
+              <td>${team.points}</td>
             </tr>
           `).join('')}
         </tbody>
       </table>
     </div>
-
-    ${
-      rows.length
-        ? ''
-        : '<p>Nenhuma equipe cadastrada.</p>'
-    }
+    ${rows.length ? '' : '<p>Nenhuma equipe cadastrada.</p>'}
   `;
 }
 
@@ -539,76 +547,72 @@ function renderHistory() {
   const items = shownMatches();
 
   target.innerHTML = items.length
-    ? items.map(m => `
-      <article class="item">
-        <h3>
-          ${esc(m.date)} —
-          ${esc(
-            m.map ||
-            maps[Number(m.round) - 1] ||
-            ''
-          )}
-        </h3>
+    ? items.map(match => {
+        const manual = match.kind === 'manual';
+        const results = [...(match.results || [])];
 
-        <p>
-          ${esc(days[m.day] || m.day)}
-          • Queda ${esc(m.round)}
-          ${m.archivedAt ? '• Arquivada' : ''}
-        </p>
-
-        <div style="overflow-x:auto">
-          <table>
-            <thead>
-              <tr>
-                <th>Equipe</th>
-                <th>Posição</th>
-                <th>Abates</th>
-                <th>Pontos</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              ${[...(m.results || [])]
-                .filter(validResult)
-                .sort(
-                  (a, b) =>
-                    Number(a.position) -
-                    Number(b.position)
-                )
-                .map(r => `
-                  <tr>
-                    <td>${esc(r.teamName)}</td>
-                    <td>${esc(r.position)}º</td>
-                    <td>${esc(r.kills)}</td>
-                    <td>${
-                      pointsFor(
-                        r.position,
-                        r.kills
-                      )
-                    }</td>
-                  </tr>
-                `).join('')}
-            </tbody>
-          </table>
-        </div>
-
-        ${
-          admin && !m.archivedAt
-            ? `
-              <button
-                type="button"
-                data-delete-match="${esc(m.id)}"
-                style="
-                  margin-top:12px;
-                  background:${COLORS.danger};
-                ">
-                Excluir queda
-              </button>
-            `
-            : ''
+        if (manual) {
+          results.sort(
+            (a, b) =>
+              Number(b.points) - Number(a.points) ||
+              String(a.teamName).localeCompare(String(b.teamName))
+          );
+        } else {
+          results.sort(
+            (a, b) => Number(a.position) - Number(b.position)
+          );
         }
-      </article>
-    `).join('')
+
+        const rows = manual
+          ? results.map((result, index) => `
+              <tr>
+                <td>${index + 1}º</td>
+                <td>${esc(result.teamName)}</td>
+                <td>${esc(result.points)}</td>
+              </tr>
+            `).join('')
+          : results
+              .filter(validResult)
+              .map(result => `
+                <tr>
+                  <td>${esc(result.teamName)}</td>
+                  <td>${esc(result.position)}º</td>
+                  <td>${esc(result.kills)}</td>
+                  <td>${pointsFor(result.position, result.kills)}</td>
+                </tr>
+              `).join('');
+
+        const headings = manual
+          ? '<tr><th>Posição</th><th>Equipe</th><th>Pontuação total</th></tr>'
+          : '<tr><th>Equipe</th><th>Posição</th><th>Abates</th><th>Pontos</th></tr>';
+
+        const title = manual
+          ? 'Classificação final'
+          : `Queda ${esc(match.round)} — ${esc(match.map || maps[Number(match.round) - 1] || '')}`;
+
+        return `
+          <article class="item">
+            <h3>${esc(match.date)} — ${title}</h3>
+            <p>
+              ${esc(days[match.day] || match.day)}
+              ${match.archivedAt ? '• Arquivada' : ''}
+            </p>
+            <div style="overflow-x:auto">
+              <table>
+                <thead>${headings}</thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+            ${admin && !match.archivedAt ? `
+              <button type="button"
+                data-delete-match="${esc(match.id)}"
+                style="margin-top:12px;background:${COLORS.danger}">
+                Excluir tabela
+              </button>
+            ` : ''}
+          </article>
+        `;
+      }).join('')
     : '<p>Nenhum resultado registrado nesta seleção.</p>';
 }
 
@@ -620,13 +624,13 @@ function renderTeams() {
 
   target.innerHTML =
     '<option value="">Selecione uma equipe</option>' +
-    teams.map(t => `
-      <option value="${esc(t.id)}">
-        ${esc(t.name)}
+    teams.map(team => `
+      <option value="${esc(team.id)}">
+        ${esc(team.name)}
       </option>
     `).join('');
 
-  if (teams.some(t => t.id === previous)) {
+  if (teams.some(team => team.id === previous)) {
     target.value = previous;
   }
 }
@@ -648,13 +652,11 @@ async function finish(day) {
   }
 
   const chosen = currentMatches().filter(
-    m => day === 'semana' || m.day === day
+    match => day === 'semana' || match.day === day
   );
 
   if (!chosen.length) {
-    message(
-      'Não existem quedas pendentes para finalizar.'
-    );
+    message('Não existem tabelas pendentes para finalizar.');
     return;
   }
 
@@ -663,7 +665,7 @@ async function finish(day) {
     : days[day];
 
   if (!confirm(
-    `Finalizar ${label}? ${chosen.length} queda(s) serão arquivadas. A classificação geral permanecerá acumulada.`
+    `Finalizar ${label}? ${chosen.length} tabela(s) serão arquivadas. A classificação geral permanecerá acumulada.`
   )) return;
 
   const typed = prompt(
@@ -679,44 +681,39 @@ async function finish(day) {
 
   try {
     await runTransaction(db, async tx => {
-      const refs = chosen.map(m => ({
-        active: doc(db, 'xtMatches', m.id),
-        archive: doc(db, 'xtArchives', m.id)
+      const refs = chosen.map(match => ({
+        active: doc(db, 'xtMatches', match.id),
+        archive: doc(db, 'xtArchives', match.id)
       }));
 
       const activeDocs = [];
       const archiveDocs = [];
 
-      for (const r of refs) {
-        activeDocs.push(
-          await tx.get(r.active)
-        );
-
-        archiveDocs.push(
-          await tx.get(r.archive)
-        );
+      for (const ref of refs) {
+        activeDocs.push(await tx.get(ref.active));
+        archiveDocs.push(await tx.get(ref.archive));
       }
 
-      if (activeDocs.some(d => !d.exists())) {
+      if (activeDocs.some(document => !document.exists())) {
         throw Error(
-          'Alguma queda foi alterada. Atualize a página e tente novamente.'
+          'Alguma tabela foi alterada. Atualize a página e tente novamente.'
         );
       }
 
-      if (archiveDocs.some(d => d.exists())) {
+      if (archiveDocs.some(document => document.exists())) {
         throw Error(
-          'Uma queda já existe no histórico. Finalização cancelada para evitar sobrescrever dados.'
+          'Uma tabela já existe no histórico. Finalização cancelada para evitar sobrescrever dados.'
         );
       }
 
-      refs.forEach((r, i) => {
-        tx.set(r.archive, {
-          ...activeDocs[i].data(),
-          kind: 'match',
+      refs.forEach((ref, index) => {
+        tx.set(ref.archive, {
+          ...activeDocs[index].data(),
+          kind: activeDocs[index].data().kind || 'match',
           archivedAt: serverTimestamp()
         });
 
-        tx.delete(r.active);
+        tx.delete(ref.active);
       });
     });
 
@@ -725,10 +722,7 @@ async function finish(day) {
     );
 
   } catch (error) {
-    message(
-      'Erro ao finalizar: ' + error.message,
-      true
-    );
+    message('Erro ao finalizar: ' + error.message, true);
   } finally {
     busy = false;
   }
@@ -740,20 +734,15 @@ onSnapshot(
   collection(db, 'publicTeams'),
   snap => {
     teams = snap.docs
-      .filter(
-        d => d.data().status === 'approved'
-      )
-      .map(d => normalizeTeam({
-        id: d.id,
-        ...d.data()
+      .filter(document => document.data().status === 'approved')
+      .map(document => normalizeTeam({
+        id: document.id,
+        ...document.data()
       }));
 
     renderAll();
   },
-  err => message(
-    'Equipes: ' + err.message,
-    true
-  )
+  error => message('Equipes: ' + error.message, true)
 );
 
 /* FIREBASE - RESULTADOS */
@@ -761,17 +750,14 @@ onSnapshot(
 onSnapshot(
   collection(db, 'xtMatches'),
   snap => {
-    matches = snap.docs.map(d => ({
-      id: d.id,
-      ...d.data()
+    matches = snap.docs.map(document => ({
+      id: document.id,
+      ...document.data()
     }));
 
     renderAll();
   },
-  err => message(
-    'Resultados: ' + err.message,
-    true
-  )
+  error => message('Resultados: ' + error.message, true)
 );
 
 /* FIREBASE - HISTÓRICO */
@@ -779,17 +765,14 @@ onSnapshot(
 onSnapshot(
   collection(db, 'xtArchives'),
   snap => {
-    archives = snap.docs.map(d => ({
-      id: d.id,
-      ...d.data()
+    archives = snap.docs.map(document => ({
+      id: document.id,
+      ...document.data()
     }));
 
     renderAll();
   },
-  err => message(
-    'Histórico: ' + err.message,
-    true
-  )
+  error => message('Histórico: ' + error.message, true)
 );
 
 /* LOGIN ADMINISTRADOR */
@@ -805,32 +788,25 @@ onAuthStateChanged(auth, async user => {
 
       admin = permission.exists();
 
-    } catch (err) {
-      message(err.message, true);
+    } catch (error) {
+      message(error.message, true);
     }
   }
 
-  $('xtAdminPanel')?.classList.toggle(
-    'hide',
-    !admin
-  );
-
-  $('xtLoginBox')?.classList.toggle(
-    'hide',
-    admin
-  );
+  $('xtAdminPanel')?.classList.toggle('hide', !admin);
+  $('xtLoginBox')?.classList.toggle('hide', admin);
 
   renderAll();
 });
 
 /* NAVEGAÇÃO DAS TABELAS */
 
-document.addEventListener('click', e => {
-  const day = e.target.closest(
+document.addEventListener('click', event => {
+  const day = event.target.closest(
     '#xtDayTabs [data-day]'
   );
 
-  const mode = e.target.closest(
+  const mode = event.target.closest(
     '#xtModeTabs [data-mode]'
   );
 
@@ -849,8 +825,8 @@ document.addEventListener('click', e => {
 
 $('xtLoginForm')?.addEventListener(
   'submit',
-  async e => {
-    e.preventDefault();
+  async event => {
+    event.preventDefault();
 
     try {
       await signInWithEmailAndPassword(
@@ -862,8 +838,8 @@ $('xtLoginForm')?.addEventListener(
       $('xtPassword').value = '';
       message('Login realizado.');
 
-    } catch (err) {
-      message(err.message, true);
+    } catch (error) {
+      message(error.message, true);
     }
   }
 );
@@ -876,28 +852,25 @@ $('xtLogout')?.addEventListener(
     try {
       await signOut(auth);
       message('Você saiu do painel.');
-    } catch (err) {
-      message(err.message, true);
+    } catch (error) {
+      message(error.message, true);
     }
   }
 );
 
-/* SALVAR RESULTADO */
+/* COMPATIBILIDADE COM O FORMULÁRIO ANTIGO DE QUEDAS */
 
 $('xtResultForm')?.addEventListener(
   'submit',
-  async e => {
-    e.preventDefault();
+  async event => {
+    event.preventDefault();
 
     if (!admin || busy) {
-      message(
-        'Somente o ADM pode salvar resultados.',
-        true
-      );
+      message('Somente o ADM pode salvar resultados.', true);
       return;
     }
 
-    const button = e.currentTarget.querySelector(
+    const button = event.currentTarget.querySelector(
       'button[type="submit"]'
     );
 
@@ -906,9 +879,7 @@ $('xtResultForm')?.addEventListener(
     try {
       const date = $('matchDate').value;
       const day = $('matchDay').value;
-      const round = Number(
-        $('matchRound').value
-      );
+      const round = Number($('matchRound').value);
 
       if (
         !date ||
@@ -917,66 +888,41 @@ $('xtResultForm')?.addEventListener(
         round < 1 ||
         round > 4
       ) {
-        throw Error(
-          'Preencha data, dia e queda corretamente.'
-        );
+        throw Error('Preencha data, dia e queda corretamente.');
       }
 
-      const dateObj = new Date(
-        date + 'T12:00:00'
-      );
+      const dateObj = new Date(date + 'T12:00:00');
 
       if (
         Number.isNaN(dateObj.getTime()) ||
         dateObj.getDay() !== weekdays[day]
       ) {
-        throw Error(
-          'A data não corresponde ao dia selecionado.'
-        );
+        throw Error('A data não corresponde ao dia selecionado.');
       }
 
       const team = teams.find(
-        t => t.id === $('teamSelect').value
+        item => item.id === $('teamSelect').value
       );
 
       if (!team) {
-        throw Error(
-          'Selecione uma equipe válida.'
-        );
+        throw Error('Selecione uma equipe válida.');
       }
 
-      const position = Number(
-        $('matchPosition').value
-      );
-
-      const kills = Number(
-        $('matchKills').value
-      );
+      const position = Number($('matchPosition').value);
+      const kills = Number($('matchKills').value);
 
       pointsFor(position, kills);
 
       const id = `${date}_${day}_${round}`;
 
       await runTransaction(db, async tx => {
-        const active = doc(
-          db,
-          'xtMatches',
-          id
-        );
-
-        const archived = doc(
-          db,
-          'xtArchives',
-          id
-        );
-
+        const active = doc(db, 'xtMatches', id);
+        const archived = doc(db, 'xtArchives', id);
         const current = await tx.get(active);
         const historical = await tx.get(archived);
 
         if (historical.exists()) {
-          throw Error(
-            'Esta queda já foi finalizada e não pode ser reaberta.'
-          );
+          throw Error('Esta queda já foi finalizada e não pode ser reaberta.');
         }
 
         const results = [
@@ -985,17 +931,15 @@ $('xtResultForm')?.addEventListener(
             : [])
         ];
 
-        if (results.some(r =>
-          r.teamId !== team.id &&
-          Number(r.position) === position
+        if (results.some(result =>
+          result.teamId !== team.id &&
+          Number(result.position) === position
         )) {
-          throw Error(
-            'Essa colocação já pertence a outra equipe.'
-          );
+          throw Error('Essa colocação já pertence a outra equipe.');
         }
 
         const index = results.findIndex(
-          r => r.teamId === team.id
+          result => result.teamId === team.id
         );
 
         const result = {
@@ -1021,32 +965,246 @@ $('xtResultForm')?.addEventListener(
         });
       });
 
-      message(
-        'Resultado salvo e classificação atualizada!'
-      );
+      message('Resultado salvo e classificação atualizada!');
 
-    } catch (err) {
-      message(err.message, true);
+    } catch (error) {
+      message(error.message, true);
     } finally {
       if (button) button.disabled = false;
     }
   }
 );
 
-/* EXCLUIR QUEDA */
+function teamKey(value) {
+  return String(value ?? '')
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('pt-BR');
+}
+
+function parseBulkScores(text) {
+  const teamsByName = new Map(
+    teams.map(team => [teamKey(team.name), team])
+  );
+
+  const usedTeams = new Set();
+  const results = [];
+
+  const lines = String(text || '')
+    .split(/\r?\n/)
+    .map((line, index) => ({
+      line: line.trim(),
+      number: index + 1
+    }))
+    .filter(item => item.line);
+
+  if (!lines.length) {
+    throw Error('Cole pelo menos uma equipe e sua pontuação total.');
+  }
+
+  for (const item of lines) {
+    const delimiter = item.line.includes('\t')
+      ? '\t'
+      : item.line.includes(';')
+        ? ';'
+        : item.line.includes('|')
+          ? '|'
+          : ',';
+
+    const parts = item.line
+      .split(delimiter)
+      .map(part => part.trim());
+
+    if (
+      item.number === 1 &&
+      parts.length === 2 &&
+      /^(equipe|line|time)$/i.test(parts[0]) &&
+      /^(pontos?|pontuação|pontuacao|total|pontuação total|pontuacao total)$/i.test(parts[1])
+    ) {
+      continue;
+    }
+
+    if (parts.length !== 2 || !parts[0] || !parts[1]) {
+      throw Error(`Linha ${item.number}: use Equipe [TAB] Pontuação.`);
+    }
+
+    const team = teamsByName.get(teamKey(parts[0]));
+
+    if (!team) {
+      throw Error(
+        `Linha ${item.number}: equipe “${parts[0]}” não encontrada entre as equipes confirmadas.`
+      );
+    }
+
+    if (usedTeams.has(team.id)) {
+      throw Error(
+        `Linha ${item.number}: a equipe “${team.name}” aparece mais de uma vez.`
+      );
+    }
+
+    const scoreText = parts[1].replace(/\s/g, '');
+
+    if (!/^\d+$/.test(scoreText)) {
+      throw Error(
+        `Linha ${item.number}: a pontuação de “${team.name}” precisa ser um número inteiro igual ou maior que zero.`
+      );
+    }
+
+    usedTeams.add(team.id);
+
+    results.push({
+      teamId: team.id,
+      teamName: team.name,
+      points: Number(scoreText)
+    });
+  }
+
+  if (!results.length) {
+    throw Error('Não encontrei equipes para importar. Confira as linhas coladas.');
+  }
+
+  return results.sort(
+    (a, b) =>
+      b.points - a.points ||
+      a.teamName.localeCompare(b.teamName)
+  );
+}
+
+function renderBulkPreview() {
+  const target = $('bulkScorePreview');
+  if (!target) return;
+
+  const text = $('bulkScores')?.value || '';
+
+  if (!text.trim()) {
+    target.innerHTML = '';
+    return;
+  }
+
+  try {
+    const rows = parseBulkScores(text);
+
+    target.innerHTML = `
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Posição</th>
+              <th>Equipe</th>
+              <th>Pontuação total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((row, index) => `
+              <tr>
+                <td>${index + 1}º</td>
+                <td>${esc(row.teamName)}</td>
+                <td>${row.points}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } catch (error) {
+    target.innerHTML = `
+      <p class="notice" style="color:#ff7777">
+        ${esc(error.message)}
+      </p>
+    `;
+  }
+}
+
+$('bulkScores')?.addEventListener(
+  'input',
+  renderBulkPreview
+);
+
+/* SALVAR TABELA COM PONTUAÇÃO TOTAL */
+
+$('xtBulkScoreForm')?.addEventListener(
+  'submit',
+  async event => {
+    event.preventDefault();
+
+    if (!admin || busy) {
+      message('Somente o ADM pode salvar resultados.', true);
+      return;
+    }
+
+    const button = event.currentTarget.querySelector(
+      'button[type="submit"]'
+    );
+
+    if (button) button.disabled = true;
+
+    try {
+      const date = $('bulkMatchDate').value;
+      const day = $('bulkMatchDay').value;
+
+      if (!date || !days[day]) {
+        throw Error('Preencha a data e o dia do XTREINO.');
+      }
+
+      const dateObj = new Date(date + 'T12:00:00');
+
+      if (
+        Number.isNaN(dateObj.getTime()) ||
+        dateObj.getDay() !== weekdays[day]
+      ) {
+        throw Error('A data não corresponde ao dia selecionado.');
+      }
+
+      const results = parseBulkScores($('bulkScores').value);
+      const id = `${date}_${day}_manual_total`;
+
+      await runTransaction(db, async tx => {
+        const active = doc(db, 'xtMatches', id);
+        const archived = doc(db, 'xtArchives', id);
+        const current = await tx.get(active);
+        const historical = await tx.get(archived);
+
+        if (historical.exists()) {
+          throw Error('Esta tabela já foi finalizada e arquivada.');
+        }
+
+        tx.set(active, {
+          kind: 'manual',
+          date,
+          day,
+          results,
+          updatedAt: serverTimestamp(),
+          createdAt: current.exists()
+            ? current.data().createdAt || serverTimestamp()
+            : serverTimestamp()
+        });
+      });
+
+      message(
+        `Tabela salva! ${results.length} equipe(s) ordenadas pela pontuação total.`
+      );
+
+    } catch (error) {
+      message(error.message, true);
+    } finally {
+      if (button) button.disabled = false;
+    }
+  }
+);
+
+/* EXCLUIR RESULTADO OU TABELA */
 
 $('matchHistory')?.addEventListener(
   'click',
-  async e => {
-    const button = e.target.closest(
+  async event => {
+    const button = event.target.closest(
       '[data-delete-match]'
     );
 
     if (!button || !admin || busy) return;
 
-    if (!confirm(
-      'Excluir esta queda da tabela ativa?'
-    )) return;
+    if (!confirm('Excluir esta tabela ativa?')) return;
 
     try {
       busy = true;
@@ -1054,34 +1212,24 @@ $('matchHistory')?.addEventListener(
       const id = button.dataset.deleteMatch;
 
       await runTransaction(db, async tx => {
-        const active = doc(
-          db,
-          'xtMatches',
-          id
-        );
+        const active = doc(db, 'xtMatches', id);
+        const archived = doc(db, 'xtArchives', id);
+        const activeDoc = await tx.get(active);
+        const archiveDoc = await tx.get(archived);
 
-        const archived = doc(
-          db,
-          'xtArchives',
-          id
-        );
-
-        const a = await tx.get(active);
-        const h = await tx.get(archived);
-
-        if (h.exists()) {
-          throw Error('Queda já arquivada.');
+        if (archiveDoc.exists()) {
+          throw Error('Esta tabela já foi arquivada.');
         }
 
-        if (a.exists()) {
+        if (activeDoc.exists()) {
           tx.delete(active);
         }
       });
 
-      message('Queda excluída.');
+      message('Tabela excluída.');
 
-    } catch (err) {
-      message(err.message, true);
+    } catch (error) {
+      message(error.message, true);
     } finally {
       busy = false;
     }
