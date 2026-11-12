@@ -102,19 +102,27 @@ function currentMatches() {
   return matches.filter(m => m.kind !== 'closure');
 }
 
+function monthKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`;
+}
+
 function shownMatches() {
-  const base = selectedMode === 'geral'
+  const base = selectedMode === 'geral' || selectedMode === 'mensal'
     ? [...currentMatches(), ...archiveMatches()]
     : selectedMode === 'historico'
       ? archiveMatches()
       : currentMatches();
 
-  return base
-    .filter(m => selectedDay === 'geral' || m.day === selectedDay)
-    .sort((a, b) =>
-      String(b.date).localeCompare(String(a.date)) ||
-      Number(b.round) - Number(a.round)
-    );
+  const filtered = selectedMode === 'mensal'
+    ? base.filter(m => String(m.date || '').slice(0, 7) === monthKey())
+    : base.filter(m => selectedDay === 'geral' || m.day === selectedDay);
+
+  return filtered.sort((a, b) =>
+    String(b.date).localeCompare(String(a.date)) ||
+    Number(b.round) - Number(a.round)
+  );
 }
 
 function rankingFor(items) {
@@ -363,6 +371,7 @@ function renderTabs() {
     modeBox.innerHTML = [
       ['semana', '📅 SEMANA ATUAL'],
       ['geral', '🏆 GERAL ACUMULADA'],
+      ['mensal', '📊 MENSAL'],
       ['historico', '📜 HISTÓRICO']
     ].map(([id, label]) => `
       <button type="button" data-mode="${id}"
@@ -396,12 +405,6 @@ function rankingTable(rows) {
     </div>
     ${rows.length ? '' : '<p>Nenhuma equipe cadastrada.</p>'}
   `;
-}
-
-function monthKey(date = new Date()) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  return `${year}-${month}`;
 }
 
 function monthlyRankingFor(items) {
@@ -443,10 +446,7 @@ function renderRanking() {
 
   const items = shownMatches();
 
-  if (selectedMode === 'geral') {
-    const currentMonth = monthKey();
-    const allMonthMatches = [...currentMatches(), ...archiveMatches()]
-      .filter(match => String(match.date || '').slice(0, 7) === currentMonth);
+  if (selectedMode === 'mensal') {
     const label = new Intl.DateTimeFormat('pt-BR', {
       month: 'long',
       year: 'numeric'
@@ -454,10 +454,28 @@ function renderRanking() {
 
     target.innerHTML = `
       <h3 style="color:${COLORS.bright};text-transform:capitalize">
-        Geral acumulada — ${esc(label)}
+        Ranking mensal — ${esc(label)}
       </h3>
-      ${rankingTable(monthlyRankingFor(allMonthMatches))}
+      ${rankingTable(monthlyRankingFor(items))}
     `;
+    return;
+  }
+
+  if (selectedMode === 'geral') {
+    const allMatches = [...currentMatches(), ...archiveMatches()]
+      .filter(match => selectedDay === 'geral' || match.day === selectedDay);
+
+    if (selectedDay === 'geral') {
+      target.innerHTML = ['segunda', 'quarta', 'sexta'].map(day => `
+        <section style="margin:18px 0 28px">
+          <h3 style="color:${COLORS.bright}">${esc(days[day])}</h3>
+          ${rankingTable(rankingFor(allMatches.filter(match => match.day === day)))}
+        </section>
+      `).join('');
+      return;
+    }
+
+    target.innerHTML = rankingTable(rankingFor(allMatches));
     return;
   }
 
