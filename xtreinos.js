@@ -46,17 +46,8 @@ const weekdays = {
   sexta: 5
 };
 
-const maps = [
-  'Bermuda',
-  'Purgatório',
-  'Kalahari',
-  'Nova Terra'
-];
-
-const placementPoints = [
-  12, 9, 8, 7, 6, 5,
-  4, 3, 2, 1, 0, 0
-];
+const maps = ['Bermuda', 'Purgatório', 'Kalahari', 'Nova Terra'];
+const placementPoints = [12, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 0];
 
 let admin = false;
 let teams = [];
@@ -79,53 +70,36 @@ const esc = value => String(value ?? '').replace(
 
 function message(text, error = false) {
   const target = $('xtMessage');
-
-  if (target) {
-    target.textContent = text;
-    target.style.color = error
-      ? '#ff7777'
-      : '#86efac';
-  }
+  if (!target) return;
+  target.textContent = text;
+  target.style.color = error ? '#ff7777' : '#86efac';
 }
 
 function validResult(r) {
-  return (
-    Number.isInteger(Number(r.position)) &&
+  return Number.isInteger(Number(r.position)) &&
     Number(r.position) >= 1 &&
     Number(r.position) <= 12 &&
     Number.isInteger(Number(r.kills)) &&
-    Number(r.kills) >= 0
-  );
+    Number(r.kills) >= 0;
 }
 
 function pointsFor(position, kills) {
   if (!validResult({ position, kills })) {
     throw Error('Colocação ou abates inválidos.');
   }
-
-  return (
-    placementPoints[Number(position) - 1] +
-    Number(kills)
-  );
+  return placementPoints[Number(position) - 1] + Number(kills);
 }
 
 function normalizeTeam(x) {
-  return {
-    id: x.id,
-    name: x.team || x.name || 'Equipe'
-  };
+  return { id: x.id, name: x.team || x.name || 'Equipe' };
 }
 
 function archiveMatches() {
-  return archives.filter(
-    a => a.kind === 'match' || a.kind === 'manual'
-  );
+  return archives.filter(a => a.kind === 'match' || a.kind === 'manual');
 }
 
 function currentMatches() {
-  return matches.filter(
-    m => m.kind !== 'closure'
-  );
+  return matches.filter(m => m.kind !== 'closure');
 }
 
 function shownMatches() {
@@ -136,14 +110,10 @@ function shownMatches() {
       : currentMatches();
 
   return base
-    .filter(
-      m => selectedDay === 'geral' ||
-      m.day === selectedDay
-    )
-    .sort(
-      (a, b) =>
-        String(b.date).localeCompare(String(a.date)) ||
-        Number(b.round) - Number(a.round)
+    .filter(m => selectedDay === 'geral' || m.day === selectedDay)
+    .sort((a, b) =>
+      String(b.date).localeCompare(String(a.date)) ||
+      Number(b.round) - Number(a.round)
     );
 }
 
@@ -159,8 +129,6 @@ function rankingFor(items) {
     }])
   );
 
-  // As tabelas manuais já têm os totais somados daquele dia.
-  // Evita somar também as quedas individuais da mesma data e dia.
   const manualEvents = new Set(
     items
       .filter(match => match.kind === 'manual')
@@ -175,10 +143,7 @@ function rankingFor(items) {
         const points = Number(result.points);
         const kills = Number(result.kills || 0);
         const booyahs = Number(result.booyahs || 0);
-
-        if (!Number.isFinite(points) || points < 0) {
-          continue;
-        }
+        if (!Number.isFinite(points) || points < 0) continue;
 
         if (!totals.has(result.teamId)) {
           totals.set(result.teamId, {
@@ -192,26 +157,15 @@ function rankingFor(items) {
         }
 
         const team = totals.get(result.teamId);
-
         team.points += points;
-        team.kills += Number.isFinite(kills) && kills >= 0
-          ? kills
-          : 0;
-        team.booyahs += Number.isFinite(booyahs) && booyahs >= 0
-          ? booyahs
-          : 0;
+        team.kills += Number.isFinite(kills) && kills >= 0 ? kills : 0;
+        team.booyahs += Number.isFinite(booyahs) && booyahs >= 0 ? booyahs : 0;
         team.matches++;
-
         continue;
       }
 
-      if (manualEvents.has(`${match.date}_${match.day}`)) {
-        continue;
-      }
-
-      if (!validResult(result)) {
-        continue;
-      }
+      if (manualEvents.has(`${match.date}_${match.day}`)) continue;
+      if (!validResult(result)) continue;
 
       if (!totals.has(result.teamId)) {
         totals.set(result.teamId, {
@@ -225,23 +179,18 @@ function rankingFor(items) {
       }
 
       const team = totals.get(result.teamId);
-
       team.points += pointsFor(result.position, result.kills);
       team.kills += Number(result.kills);
       team.matches++;
-
-      if (Number(result.position) === 1) {
-        team.booyahs++;
-      }
+      if (Number(result.position) === 1) team.booyahs++;
     }
   }
 
-  return [...totals.values()].sort(
-    (a, b) =>
-      b.points - a.points ||
-      b.booyahs - a.booyahs ||
-      b.kills - a.kills ||
-      a.name.localeCompare(b.name)
+  return [...totals.values()].sort((a, b) =>
+    b.points - a.points ||
+    b.booyahs - a.booyahs ||
+    b.kills - a.kills ||
+    a.name.localeCompare(b.name)
   );
 }
 
@@ -252,7 +201,6 @@ function applyTheme() {
 
   const style = document.createElement('style');
   style.id = 'xtRedBlackTheme';
-
   style.textContent = `
     :root {
       --purple: #c51e34 !important;
@@ -307,7 +255,6 @@ function applyTheme() {
       accent-color: #c51e34;
     }
   `;
-
   document.head.appendChild(style);
 }
 
@@ -316,143 +263,76 @@ function createControls() {
 
   if (!$('xtExtraNavigation')) {
     const nav = document.createElement('div');
-
     nav.id = 'xtExtraNavigation';
-
     nav.style.cssText = `
       display:flex;
       gap:12px;
       flex-wrap:wrap;
       margin:20px 0;
     `;
-
     nav.innerHTML = `
-      <a href="./index.html"
-         style="
-           color:white;
-           background:${COLORS.secondary};
-           padding:12px 16px;
-           border-radius:10px;
-           text-decoration:none;
-         ">
+      <a href="./index.html" style="
+        color:white;background:${COLORS.secondary};padding:12px 16px;
+        border-radius:10px;text-decoration:none">
         📝 INSCRIÇÕES
       </a>
-
-      <a href="#xtDayTabs"
-         style="
-           color:white;
-           background:${COLORS.red};
-           padding:12px 16px;
-           border-radius:10px;
-           text-decoration:none;
-         ">
+      <a href="#xtDayTabs" style="
+        color:white;background:${COLORS.red};padding:12px 16px;
+        border-radius:10px;text-decoration:none">
         🏆 TABELAS
       </a>
     `;
-
-    (
-      document.querySelector('main') ||
-      document.body
-    ).prepend(nav);
+    (document.querySelector('main') || document.body).prepend(nav);
   }
 
   if (!$('xtDayTabs')) {
     const box = document.createElement('div');
-
     box.id = 'xtDayTabs';
-
     box.style.cssText = `
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      margin:20px 0;
+      display:flex;flex-wrap:wrap;gap:10px;margin:20px 0;
     `;
-
     const ranking = $('ranking');
-
-    if (ranking) {
-      (
-        ranking.closest('section') ||
-        ranking
-      ).before(box);
-    }
+    if (ranking) (ranking.closest('section') || ranking).before(box);
   }
 
   if (!$('xtModeTabs')) {
     const box = document.createElement('div');
-
     box.id = 'xtModeTabs';
-
     box.style.cssText = `
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      margin:12px 0;
+      display:flex;flex-wrap:wrap;gap:10px;margin:12px 0;
     `;
-
     $('xtDayTabs')?.after(box);
   }
 
   if (!$('xtFinishControls') && $('xtAdminPanel')) {
     const box = document.createElement('section');
-
     box.id = 'xtFinishControls';
-
     box.style.cssText = `
-      padding:20px;
-      border:1px solid ${COLORS.border};
-      border-radius:14px;
-      margin:20px 0;
-      background:${COLORS.dark};
+      padding:20px;border:1px solid ${COLORS.border};border-radius:14px;
+      margin:20px 0;background:${COLORS.dark};
     `;
-
     box.innerHTML = `
       <h2>🏁 Encerrar XTREINO</h2>
-
       <p>
         Arquiva as tabelas sem apagar equipes.
-        A tabela semanal reinicia e a classificação
-        geral continua acumulando.
+        A tabela semanal reinicia e a classificação geral continua acumulando.
       </p>
-
-      <div style="
-        display:flex;
-        flex-wrap:wrap;
-        gap:10px;
-      ">
-        <button type="button" data-finish="segunda">
-          FINALIZAR SEGUNDA
-        </button>
-
-        <button type="button" data-finish="quarta">
-          FINALIZAR QUARTA
-        </button>
-
-        <button type="button" data-finish="sexta">
-          FINALIZAR SEXTA
-        </button>
-
-        <button type="button" data-finish="semana">
-          FINALIZAR SEMANA
-        </button>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        <button type="button" data-finish="segunda">FINALIZAR SEGUNDA</button>
+        <button type="button" data-finish="quarta">FINALIZAR QUARTA</button>
+        <button type="button" data-finish="sexta">FINALIZAR SEXTA</button>
+        <button type="button" data-finish="semana">FINALIZAR SEMANA</button>
       </div>
-
       <p id="xtFinishInfo"></p>
     `;
-
     $('xtAdminPanel').append(box);
   }
 
   const finishBox = $('xtFinishControls');
-
   if (finishBox && !finishBox.dataset.listenerReady) {
     finishBox.dataset.listenerReady = 'true';
-
     finishBox.addEventListener('click', async event => {
-      const button = event.target.closest(
-        'button[data-finish]'
-      );
-
+      const button = event.target.closest('button[data-finish]');
       if (button && finishBox.contains(button)) {
         await finish(button.dataset.finish);
       }
@@ -470,30 +350,13 @@ function renderTabs() {
       ['segunda', 'SEGUNDA'],
       ['quarta', 'QUARTA'],
       ['sexta', 'SEXTA']
-    ].map(([id, label]) => {
-      const active = selectedDay === id;
-
-      return `
-        <button
-          type="button"
-          data-day="${id}"
-          aria-pressed="${active}"
-          style="
-            background:${
-              active
-                ? COLORS.red
-                : COLORS.panel
-            };
-            color:white;
-            border:1px solid ${COLORS.border};
-            padding:12px;
-            border-radius:9px;
-            cursor:pointer;
-          ">
-          ${label}
-        </button>
-      `;
-    }).join('');
+    ].map(([id, label]) => `
+      <button type="button" data-day="${id}"
+        aria-pressed="${selectedDay === id}"
+        style="background:${selectedDay === id ? COLORS.red : COLORS.panel};
+        color:white;border:1px solid ${COLORS.border};padding:12px;
+        border-radius:9px;cursor:pointer">${label}</button>
+    `).join('');
   }
 
   if (modeBox) {
@@ -501,30 +364,13 @@ function renderTabs() {
       ['semana', '📅 SEMANA ATUAL'],
       ['geral', '🏆 GERAL ACUMULADA'],
       ['historico', '📜 HISTÓRICO']
-    ].map(([id, label]) => {
-      const active = selectedMode === id;
-
-      return `
-        <button
-          type="button"
-          data-mode="${id}"
-          aria-pressed="${active}"
-          style="
-            background:${
-              active
-                ? COLORS.red
-                : COLORS.panel
-            };
-            color:white;
-            border:1px solid ${COLORS.border};
-            padding:12px;
-            border-radius:9px;
-            cursor:pointer;
-          ">
-          ${label}
-        </button>
-      `;
-    }).join('');
+    ].map(([id, label]) => `
+      <button type="button" data-mode="${id}"
+        aria-pressed="${selectedMode === id}"
+        style="background:${selectedMode === id ? COLORS.red : COLORS.panel};
+        color:white;border:1px solid ${COLORS.border};padding:12px;
+        border-radius:9px;cursor:pointer">${label}</button>
+    `).join('');
   }
 }
 
@@ -533,13 +379,7 @@ function rankingTable(rows) {
     <div style="overflow-x:auto">
       <table>
         <thead>
-          <tr>
-            <th>#</th>
-            <th>Equipe</th>
-            <th>Pontos</th>
-            <th>Abates</th>
-            <th>Booyahs</th>
-          </tr>
+          <tr><th>#</th><th>Equipe</th><th>Pontos</th><th>Abates</th><th>Booyahs</th></tr>
         </thead>
         <tbody>
           ${rows.map((team, index) => `
@@ -558,29 +398,79 @@ function rankingTable(rows) {
   `;
 }
 
+function monthKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`;
+}
+
+function monthlyRankingFor(items) {
+  const merged = new Map();
+
+  for (const row of rankingFor(items)) {
+    const key = teamKey(row.name);
+    if (!key) continue;
+
+    if (!merged.has(key)) {
+      merged.set(key, {
+        id: key,
+        name: row.name,
+        points: 0,
+        kills: 0,
+        booyahs: 0,
+        matches: 0
+      });
+    }
+
+    const team = merged.get(key);
+    team.points += row.points;
+    team.kills += row.kills;
+    team.booyahs += row.booyahs;
+    team.matches += row.matches;
+  }
+
+  return [...merged.values()].sort((a, b) =>
+    b.points - a.points ||
+    b.booyahs - a.booyahs ||
+    b.kills - a.kills ||
+    a.name.localeCompare(b.name)
+  );
+}
+
 function renderRanking() {
   const target = $('ranking');
   if (!target) return;
 
   const items = shownMatches();
 
-  // "Todos os dias" mostra uma tabela separada para cada dia.
+  if (selectedMode === 'geral') {
+    const currentMonth = monthKey();
+    const allMonthMatches = [...currentMatches(), ...archiveMatches()]
+      .filter(match => String(match.date || '').slice(0, 7) === currentMonth);
+    const label = new Intl.DateTimeFormat('pt-BR', {
+      month: 'long',
+      year: 'numeric'
+    }).format(new Date());
+
+    target.innerHTML = `
+      <h3 style="color:${COLORS.bright};text-transform:capitalize">
+        Geral acumulada — ${esc(label)}
+      </h3>
+      ${rankingTable(monthlyRankingFor(allMonthMatches))}
+    `;
+    return;
+  }
+
   if (selectedDay === 'geral') {
     const sections = ['segunda', 'quarta', 'sexta'].map(day => {
-      const rows = rankingFor(
-        items.filter(match => match.day === day)
-      );
-
+      const rows = rankingFor(items.filter(match => match.day === day));
       return `
         <section style="margin:18px 0 28px">
-          <h3 style="color:${COLORS.bright}">
-            ${esc(days[day])}
-          </h3>
+          <h3 style="color:${COLORS.bright}">${esc(days[day])}</h3>
           ${rankingTable(rows)}
         </section>
       `;
     });
-
     target.innerHTML = sections.join('');
     return;
   }
@@ -600,15 +490,12 @@ function renderHistory() {
         const results = [...(match.results || [])];
 
         if (manual) {
-          results.sort(
-            (a, b) =>
-              Number(b.points) - Number(a.points) ||
-              String(a.teamName).localeCompare(String(b.teamName))
+          results.sort((a, b) =>
+            Number(b.points) - Number(a.points) ||
+            String(a.teamName).localeCompare(String(b.teamName))
           );
         } else {
-          results.sort(
-            (a, b) => Number(a.position) - Number(b.position)
-          );
+          results.sort((a, b) => Number(a.position) - Number(b.position));
         }
 
         const rows = manual
@@ -621,16 +508,14 @@ function renderHistory() {
                 <td>${esc(result.booyahs || 0)}</td>
               </tr>
             `).join('')
-          : results
-              .filter(validResult)
-              .map(result => `
-                <tr>
-                  <td>${esc(result.teamName)}</td>
-                  <td>${esc(result.position)}º</td>
-                  <td>${esc(result.kills)}</td>
-                  <td>${pointsFor(result.position, result.kills)}</td>
-                </tr>
-              `).join('');
+          : results.filter(validResult).map(result => `
+              <tr>
+                <td>${esc(result.teamName)}</td>
+                <td>${esc(result.position)}º</td>
+                <td>${esc(result.kills)}</td>
+                <td>${pointsFor(result.position, result.kills)}</td>
+              </tr>
+            `).join('');
 
         const headings = manual
           ? '<tr><th>#</th><th>Equipe</th><th>Pontos</th><th>Abates</th><th>Booyahs</th></tr>'
@@ -648,14 +533,10 @@ function renderHistory() {
               ${match.archivedAt ? '• Arquivada' : ''}
             </p>
             <div style="overflow-x:auto">
-              <table>
-                <thead>${headings}</thead>
-                <tbody>${rows}</tbody>
-              </table>
+              <table><thead>${headings}</thead><tbody>${rows}</tbody></table>
             </div>
             ${admin && !match.archivedAt ? `
-              <button type="button"
-                data-delete-match="${esc(match.id)}"
+              <button type="button" data-delete-match="${esc(match.id)}"
                 style="margin-top:12px;background:${COLORS.danger}">
                 Excluir tabela
               </button>
@@ -671,18 +552,10 @@ function renderTeams() {
   if (!target) return;
 
   const previous = target.value;
+  target.innerHTML = '<option value="">Selecione uma equipe</option>' +
+    teams.map(t => `<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('');
 
-  target.innerHTML =
-    '<option value="">Selecione uma equipe</option>' +
-    teams.map(team => `
-      <option value="${esc(team.id)}">
-        ${esc(team.name)}
-      </option>
-    `).join('');
-
-  if (teams.some(team => team.id === previous)) {
-    target.value = previous;
-  }
+  if (teams.some(t => t.id === previous)) target.value = previous;
 }
 
 function renderAll() {
@@ -695,82 +568,61 @@ function renderAll() {
 
 async function finish(day) {
   if (!admin || busy) return;
-
   if (day !== 'semana' && !days[day]) {
     message('Dia inválido.', true);
     return;
   }
 
-  const chosen = currentMatches().filter(
-    match => day === 'semana' || match.day === day
-  );
-
+  const chosen = currentMatches().filter(m => day === 'semana' || m.day === day);
   if (!chosen.length) {
-    message('Não existem tabelas pendentes para finalizar.');
+    message('Não existem quedas pendentes para finalizar.');
     return;
   }
 
-  const label = day === 'semana'
-    ? 'a semana inteira'
-    : days[day];
-
+  const label = day === 'semana' ? 'a semana inteira' : days[day];
   if (!confirm(
-    `Finalizar ${label}? ${chosen.length} tabela(s) serão arquivadas. A classificação geral permanecerá acumulada.`
+    `Finalizar ${label}? ${chosen.length} queda(s) serão arquivadas. A classificação geral permanecerá acumulada.`
   )) return;
 
-  const typed = prompt(
-    'Para confirmar, digite FINALIZAR:'
-  );
-
+  const typed = prompt('Para confirmar, digite FINALIZAR:');
   if (typed !== 'FINALIZAR') {
     message('Finalização cancelada.');
     return;
   }
 
   busy = true;
-
   try {
     await runTransaction(db, async tx => {
-      const refs = chosen.map(match => ({
-        active: doc(db, 'xtMatches', match.id),
-        archive: doc(db, 'xtArchives', match.id)
+      const refs = chosen.map(m => ({
+        active: doc(db, 'xtMatches', m.id),
+        archive: doc(db, 'xtArchives', m.id)
       }));
 
       const activeDocs = [];
       const archiveDocs = [];
-
-      for (const ref of refs) {
-        activeDocs.push(await tx.get(ref.active));
-        archiveDocs.push(await tx.get(ref.archive));
+      for (const r of refs) {
+        activeDocs.push(await tx.get(r.active));
+        archiveDocs.push(await tx.get(r.archive));
       }
 
-      if (activeDocs.some(document => !document.exists())) {
-        throw Error(
-          'Alguma tabela foi alterada. Atualize a página e tente novamente.'
-        );
+      if (activeDocs.some(d => !d.exists())) {
+        throw Error('Alguma queda foi alterada. Atualize a página e tente novamente.');
+      }
+      if (archiveDocs.some(d => d.exists())) {
+        throw Error('Uma queda já existe no histórico. Finalização cancelada para evitar sobrescrever dados.');
       }
 
-      if (archiveDocs.some(document => document.exists())) {
-        throw Error(
-          'Uma tabela já existe no histórico. Finalização cancelada para evitar sobrescrever dados.'
-        );
-      }
-
-      refs.forEach((ref, index) => {
-        tx.set(ref.archive, {
-          ...activeDocs[index].data(),
-          kind: activeDocs[index].data().kind || 'match',
+      refs.forEach((r, i) => {
+        tx.set(r.archive, {
+          ...activeDocs[i].data(),
+          kind: activeDocs[i].data().kind || 'match',
           archivedAt: serverTimestamp()
         });
-
-        tx.delete(ref.active);
+        tx.delete(r.active);
       });
     });
 
-    message(
-      `${label} finalizada com sucesso! Histórico preservado e classificação geral mantida.`
-    );
-
+    message(`${label} finalizada com sucesso! Histórico preservado e classificação geral mantida.`);
   } catch (error) {
     message('Erro ao finalizar: ' + error.message, true);
   } finally {
@@ -784,15 +636,11 @@ onSnapshot(
   collection(db, 'publicTeams'),
   snap => {
     teams = snap.docs
-      .filter(document => document.data().status === 'approved')
-      .map(document => normalizeTeam({
-        id: document.id,
-        ...document.data()
-      }));
-
+      .filter(d => d.data().status === 'approved')
+      .map(d => normalizeTeam({ id: d.id, ...d.data() }));
     renderAll();
   },
-  error => message('Equipes: ' + error.message, true)
+  err => message('Equipes: ' + err.message, true)
 );
 
 /* FIREBASE - RESULTADOS */
@@ -800,14 +648,10 @@ onSnapshot(
 onSnapshot(
   collection(db, 'xtMatches'),
   snap => {
-    matches = snap.docs.map(document => ({
-      id: document.id,
-      ...document.data()
-    }));
-
+    matches = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderAll();
   },
-  error => message('Resultados: ' + error.message, true)
+  err => message('Resultados: ' + err.message, true)
 );
 
 /* FIREBASE - HISTÓRICO */
@@ -815,14 +659,10 @@ onSnapshot(
 onSnapshot(
   collection(db, 'xtArchives'),
   snap => {
-    archives = snap.docs.map(document => ({
-      id: document.id,
-      ...document.data()
-    }));
-
+    archives = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderAll();
   },
-  error => message('Histórico: ' + error.message, true)
+  err => message('Histórico: ' + err.message, true)
 );
 
 /* LOGIN ADMINISTRADOR */
@@ -832,39 +672,28 @@ onAuthStateChanged(auth, async user => {
 
   if (user) {
     try {
-      const permission = await getDoc(
-        doc(db, 'admins', user.uid)
-      );
-
+      const permission = await getDoc(doc(db, 'admins', user.uid));
       admin = permission.exists();
-
-    } catch (error) {
-      message(error.message, true);
+    } catch (err) {
+      message(err.message, true);
     }
   }
 
   $('xtAdminPanel')?.classList.toggle('hide', !admin);
   $('xtLoginBox')?.classList.toggle('hide', admin);
-
   renderAll();
 });
 
 /* NAVEGAÇÃO DAS TABELAS */
 
-document.addEventListener('click', event => {
-  const day = event.target.closest(
-    '#xtDayTabs [data-day]'
-  );
-
-  const mode = event.target.closest(
-    '#xtModeTabs [data-mode]'
-  );
+document.addEventListener('click', e => {
+  const day = e.target.closest('#xtDayTabs [data-day]');
+  const mode = e.target.closest('#xtModeTabs [data-mode]');
 
   if (day) {
     selectedDay = day.dataset.day;
     renderAll();
   }
-
   if (mode) {
     selectedMode = mode.dataset.mode;
     renderAll();
@@ -873,157 +702,104 @@ document.addEventListener('click', event => {
 
 /* ENTRAR NO PAINEL ADM */
 
-$('xtLoginForm')?.addEventListener(
-  'submit',
-  async event => {
-    event.preventDefault();
-
-    try {
-      await signInWithEmailAndPassword(
-        auth,
-        $('xtEmail').value.trim(),
-        $('xtPassword').value
-      );
-
-      $('xtPassword').value = '';
-      message('Login realizado.');
-
-    } catch (error) {
-      message(error.message, true);
-    }
+$('xtLoginForm')?.addEventListener('submit', async e => {
+  e.preventDefault();
+  try {
+    await signInWithEmailAndPassword(
+      auth,
+      $('xtEmail').value.trim(),
+      $('xtPassword').value
+    );
+    $('xtPassword').value = '';
+    message('Login realizado.');
+  } catch (err) {
+    message(err.message, true);
   }
-);
+});
 
 /* SAIR DO PAINEL ADM */
 
-$('xtLogout')?.addEventListener(
-  'click',
-  async () => {
-    try {
-      await signOut(auth);
-      message('Você saiu do painel.');
-    } catch (error) {
-      message(error.message, true);
-    }
+$('xtLogout')?.addEventListener('click', async () => {
+  try {
+    await signOut(auth);
+    message('Você saiu do painel.');
+  } catch (err) {
+    message(err.message, true);
   }
-);
+});
 
-/* COMPATIBILIDADE COM O FORMULÁRIO ANTIGO DE QUEDAS */
+/* SALVAR RESULTADO */
 
-$('xtResultForm')?.addEventListener(
-  'submit',
-  async event => {
-    event.preventDefault();
+$('xtResultForm')?.addEventListener('submit', async e => {
+  e.preventDefault();
 
-    if (!admin || busy) {
-      message('Somente o ADM pode salvar resultados.', true);
-      return;
+  if (!admin || busy) {
+    message('Somente o ADM pode salvar resultados.', true);
+    return;
+  }
+
+  const button = e.currentTarget.querySelector('button[type="submit"]');
+  if (button) button.disabled = true;
+
+  try {
+    const date = $('matchDate').value;
+    const day = $('matchDay').value;
+    const round = Number($('matchRound').value);
+
+    if (!date || !days[day] || !Number.isInteger(round) || round < 1 || round > 4) {
+      throw Error('Preencha data, dia e queda corretamente.');
     }
 
-    const button = event.currentTarget.querySelector(
-      'button[type="submit"]'
-    );
+    const dateObj = new Date(date + 'T12:00:00');
+    if (Number.isNaN(dateObj.getTime()) || dateObj.getDay() !== weekdays[day]) {
+      throw Error('A data não corresponde ao dia selecionado.');
+    }
 
-    if (button) button.disabled = true;
+    const team = teams.find(t => t.id === $('teamSelect').value);
+    if (!team) throw Error('Selecione uma equipe válida.');
 
-    try {
-      const date = $('matchDate').value;
-      const day = $('matchDay').value;
-      const round = Number($('matchRound').value);
+    const position = Number($('matchPosition').value);
+    const kills = Number($('matchKills').value);
+    pointsFor(position, kills);
 
-      if (
-        !date ||
-        !days[day] ||
-        !Number.isInteger(round) ||
-        round < 1 ||
-        round > 4
-      ) {
-        throw Error('Preencha data, dia e queda corretamente.');
+    const id = `${date}_${day}_${round}`;
+    await runTransaction(db, async tx => {
+      const active = doc(db, 'xtMatches', id);
+      const archived = doc(db, 'xtArchives', id);
+      const current = await tx.get(active);
+      const historical = await tx.get(archived);
+
+      if (historical.exists()) {
+        throw Error('Esta queda já foi finalizada e não pode ser reaberta.');
       }
 
-      const dateObj = new Date(date + 'T12:00:00');
-
-      if (
-        Number.isNaN(dateObj.getTime()) ||
-        dateObj.getDay() !== weekdays[day]
-      ) {
-        throw Error('A data não corresponde ao dia selecionado.');
+      const results = [...(current.exists() ? current.data().results || [] : [])];
+      if (results.some(r => r.teamId !== team.id && Number(r.position) === position)) {
+        throw Error('Essa colocação já pertence a outra equipe.');
       }
 
-      const team = teams.find(
-        item => item.id === $('teamSelect').value
-      );
+      const index = results.findIndex(r => r.teamId === team.id);
+      const result = { teamId: team.id, teamName: team.name, position, kills };
+      if (index >= 0) results[index] = result;
+      else results.push(result);
 
-      if (!team) {
-        throw Error('Selecione uma equipe válida.');
-      }
-
-      const position = Number($('matchPosition').value);
-      const kills = Number($('matchKills').value);
-
-      pointsFor(position, kills);
-
-      const id = `${date}_${day}_${round}`;
-
-      await runTransaction(db, async tx => {
-        const active = doc(db, 'xtMatches', id);
-        const archived = doc(db, 'xtArchives', id);
-        const current = await tx.get(active);
-        const historical = await tx.get(archived);
-
-        if (historical.exists()) {
-          throw Error('Esta queda já foi finalizada e não pode ser reaberta.');
-        }
-
-        const results = [
-          ...(current.exists()
-            ? current.data().results || []
-            : [])
-        ];
-
-        if (results.some(result =>
-          result.teamId !== team.id &&
-          Number(result.position) === position
-        )) {
-          throw Error('Essa colocação já pertence a outra equipe.');
-        }
-
-        const index = results.findIndex(
-          result => result.teamId === team.id
-        );
-
-        const result = {
-          teamId: team.id,
-          teamName: team.name,
-          position,
-          kills
-        };
-
-        if (index >= 0) {
-          results[index] = result;
-        } else {
-          results.push(result);
-        }
-
-        tx.set(active, {
-          date,
-          day,
-          round,
-          map: maps[round - 1],
-          results,
-          updatedAt: serverTimestamp()
-        });
+      tx.set(active, {
+        date,
+        day,
+        round,
+        map: maps[round - 1],
+        results,
+        updatedAt: serverTimestamp()
       });
+    });
 
-      message('Resultado salvo e classificação atualizada!');
-
-    } catch (error) {
-      message(error.message, true);
-    } finally {
-      if (button) button.disabled = false;
-    }
+    message('Resultado salvo e classificação atualizada!');
+  } catch (err) {
+    message(err.message, true);
+  } finally {
+    if (button) button.disabled = false;
   }
-);
+});
 
 function teamKey(value) {
   return String(value ?? '')
@@ -1034,19 +810,12 @@ function teamKey(value) {
 }
 
 function parseBulkScores(text) {
-  const byName = new Map(
-    teams.map(team => [teamKey(team.name), team])
-  );
-
+  const byName = new Map(teams.map(team => [teamKey(team.name), team]));
   const used = new Set();
   const results = [];
-
   const lines = String(text || '')
     .split(/\r?\n/)
-    .map((line, index) => ({
-      line: line.trim(),
-      number: index + 1
-    }))
+    .map((line, index) => ({ line: line.trim(), number: index + 1 }))
     .filter(item => item.line);
 
   if (!lines.length) {
@@ -1059,22 +828,13 @@ function parseBulkScores(text) {
     let killsText = '0';
     let booyahsText = '0';
 
-    // Formato: EQUIPE PONTOS104 KILL 61 3 BOOYAH
     const detailMatch = item.line.match(
       /^(.+?)\s+PONTOS\s*[:=]?\s*(\d+)\s+KILL\s*[:=]?\s*(\d+)(?:\s+(\d+)\s+BOOYAH)?\s*$/i
     );
 
     if (detailMatch) {
-      [
-        ,
-        teamName,
-        pointsText,
-        killsText,
-        booyahsText = '0'
-      ] = detailMatch;
+      [, teamName, pointsText, killsText, booyahsText = '0'] = detailMatch;
     } else {
-      // Também aceita colunas de planilha:
-      // Equipe [TAB] Pontos [TAB] Abates [TAB] Booyahs
       const delimiter = item.line.includes('\t')
         ? '\t'
         : item.line.includes(';')
@@ -1082,64 +842,38 @@ function parseBulkScores(text) {
           : item.line.includes('|')
             ? '|'
             : ',';
-
-      const parts = item.line
-        .split(delimiter)
-        .map(part => part.trim());
+      const parts = item.line.split(delimiter).map(part => part.trim());
 
       if (
         item.number === 1 &&
         parts.length >= 2 &&
         /^(equipe|line|time)$/i.test(parts[0])
-      ) {
-        continue;
-      }
+      ) continue;
 
       if (parts.length < 2 || parts.length > 4 || !parts[0]) {
-        throw Error(
-          `Linha ${item.number}: use Equipe PONTOS104 KILL 61 3 BOOYAH, ou colunas separadas por TAB.`
-        );
+        throw Error(`Linha ${item.number}: use Equipe PONTOS104 KILL 61 3 BOOYAH, ou colunas separadas por TAB.`);
       }
 
-      [
-        teamName,
-        pointsText,
-        killsText = '0',
-        booyahsText = '0'
-      ] = parts;
+      [teamName, pointsText, killsText = '0', booyahsText = '0'] = parts;
     }
 
     const team = byName.get(teamKey(teamName));
-
     if (!team) {
-      throw Error(
-        `Linha ${item.number}: equipe “${teamName}” não encontrada entre as equipes confirmadas.`
-      );
+      throw Error(`Linha ${item.number}: equipe “${teamName}” não encontrada entre as equipes confirmadas.`);
     }
-
     if (used.has(team.id)) {
-      throw Error(
-        `Linha ${item.number}: a equipe “${team.name}” aparece mais de uma vez.`
-      );
+      throw Error(`Linha ${item.number}: a equipe “${team.name}” aparece mais de uma vez.`);
     }
 
     const points = Number(pointsText);
     const kills = Number(killsText || 0);
     const booyahs = Number(booyahsText || 0);
-
-    if (
-      ![points, kills, booyahs].every(Number.isInteger) ||
-      points < 0 ||
-      kills < 0 ||
-      booyahs < 0
-    ) {
-      throw Error(
-        `Linha ${item.number}: pontos, abates e booyahs precisam ser números inteiros iguais ou maiores que zero.`
-      );
+    if (![points, kills, booyahs].every(Number.isInteger) ||
+        points < 0 || kills < 0 || booyahs < 0) {
+      throw Error(`Linha ${item.number}: pontos, abates e booyahs precisam ser números inteiros iguais ou maiores que zero.`);
     }
 
     used.add(team.id);
-
     results.push({
       teamId: team.id,
       teamName: team.name,
@@ -1153,12 +887,11 @@ function parseBulkScores(text) {
     throw Error('Não encontrei equipes para importar. Confira as linhas coladas.');
   }
 
-  return results.sort(
-    (a, b) =>
-      b.points - a.points ||
-      b.booyahs - a.booyahs ||
-      b.kills - a.kills ||
-      a.teamName.localeCompare(b.teamName)
+  return results.sort((a, b) =>
+    b.points - a.points ||
+    b.booyahs - a.booyahs ||
+    b.kills - a.kills ||
+    a.teamName.localeCompare(b.teamName)
   );
 }
 
@@ -1167,7 +900,6 @@ function renderBulkPreview() {
   if (!target) return;
 
   const text = $('bulkScores')?.value || '';
-
   if (!text.trim()) {
     target.innerHTML = '';
     return;
@@ -1175,18 +907,11 @@ function renderBulkPreview() {
 
   try {
     const rows = parseBulkScores(text);
-
     target.innerHTML = `
       <div style="overflow-x:auto">
         <table>
           <thead>
-            <tr>
-              <th>#</th>
-              <th>Equipe</th>
-              <th>Pontos</th>
-              <th>Abates</th>
-              <th>Booyahs</th>
-            </tr>
+            <tr><th>#</th><th>Equipe</th><th>Pontos</th><th>Abates</th><th>Booyahs</th></tr>
           </thead>
           <tbody>
             ${rows.map((row, index) => `
@@ -1203,133 +928,96 @@ function renderBulkPreview() {
       </div>
     `;
   } catch (error) {
-    target.innerHTML = `
-      <p class="notice" style="color:#ff7777">
-        ${esc(error.message)}
-      </p>
-    `;
+    target.innerHTML = `<p class="notice" style="color:#ff7777">${esc(error.message)}</p>`;
   }
 }
 
-$('bulkScores')?.addEventListener(
-  'input',
-  renderBulkPreview
-);
+$('bulkScores')?.addEventListener('input', renderBulkPreview);
 
-/* SALVAR TABELA COM PONTUAÇÃO TOTAL */
+$('xtBulkScoreForm')?.addEventListener('submit', async event => {
+  event.preventDefault();
 
-$('xtBulkScoreForm')?.addEventListener(
-  'submit',
-  async event => {
-    event.preventDefault();
+  if (!admin || busy) {
+    message('Somente o ADM pode salvar resultados.', true);
+    return;
+  }
 
-    if (!admin || busy) {
-      message('Somente o ADM pode salvar resultados.', true);
-      return;
+  const button = event.currentTarget.querySelector('button[type="submit"]');
+  if (button) button.disabled = true;
+
+  try {
+    const date = $('bulkMatchDate').value;
+    const day = $('bulkMatchDay').value;
+    if (!date || !days[day]) {
+      throw Error('Preencha a data e o dia do XTREINO.');
     }
 
-    const button = event.currentTarget.querySelector(
-      'button[type="submit"]'
-    );
+    const dateObj = new Date(date + 'T12:00:00');
+    if (Number.isNaN(dateObj.getTime()) || dateObj.getDay() !== weekdays[day]) {
+      throw Error('A data não corresponde ao dia selecionado.');
+    }
 
-    if (button) button.disabled = true;
+    const results = parseBulkScores($('bulkScores').value);
+    const id = `${date}_${day}_manual_total`;
 
-    try {
-      const date = $('bulkMatchDate').value;
-      const day = $('bulkMatchDay').value;
+    await runTransaction(db, async tx => {
+      const active = doc(db, 'xtMatches', id);
+      const archived = doc(db, 'xtArchives', id);
+      const current = await tx.get(active);
+      const historical = await tx.get(archived);
 
-      if (!date || !days[day]) {
-        throw Error('Preencha a data e o dia do XTREINO.');
+      if (historical.exists()) {
+        throw Error('Esta tabela já foi finalizada e arquivada.');
       }
 
-      const dateObj = new Date(date + 'T12:00:00');
-
-      if (
-        Number.isNaN(dateObj.getTime()) ||
-        dateObj.getDay() !== weekdays[day]
-      ) {
-        throw Error('A data não corresponde ao dia selecionado.');
-      }
-
-      const results = parseBulkScores($('bulkScores').value);
-      const id = `${date}_${day}_manual_total`;
-
-      await runTransaction(db, async tx => {
-        const active = doc(db, 'xtMatches', id);
-        const archived = doc(db, 'xtArchives', id);
-        const current = await tx.get(active);
-        const historical = await tx.get(archived);
-
-        if (historical.exists()) {
-          throw Error('Esta tabela já foi finalizada e arquivada.');
-        }
-
-        tx.set(active, {
-          kind: 'manual',
-          date,
-          day,
-          results,
-          updatedAt: serverTimestamp(),
-          createdAt: current.exists()
-            ? current.data().createdAt || serverTimestamp()
-            : serverTimestamp()
-        });
+      tx.set(active, {
+        kind: 'manual',
+        date,
+        day,
+        results,
+        updatedAt: serverTimestamp(),
+        createdAt: current.exists()
+          ? current.data().createdAt || serverTimestamp()
+          : serverTimestamp()
       });
+    });
 
-      message(
-        `Tabela salva! ${results.length} equipe(s) ordenadas por pontos, com abates e booyahs registrados.`
-      );
-
-    } catch (error) {
-      message(error.message, true);
-    } finally {
-      if (button) button.disabled = false;
-    }
+    message(`Tabela salva! ${results.length} equipe(s) ordenadas por pontos, com abates e booyahs registrados.`);
+  } catch (error) {
+    message(error.message, true);
+  } finally {
+    if (button) button.disabled = false;
   }
-);
+});
 
-/* EXCLUIR RESULTADO OU TABELA */
+/* EXCLUIR QUEDA */
 
-$('matchHistory')?.addEventListener(
-  'click',
-  async event => {
-    const button = event.target.closest(
-      '[data-delete-match]'
-    );
+$('matchHistory')?.addEventListener('click', async e => {
+  const button = e.target.closest('[data-delete-match]');
+  if (!button || !admin || busy) return;
+  if (!confirm('Excluir esta queda da tabela ativa?')) return;
 
-    if (!button || !admin || busy) return;
+  try {
+    busy = true;
+    const id = button.dataset.deleteMatch;
 
-    if (!confirm('Excluir esta tabela ativa?')) return;
+    await runTransaction(db, async tx => {
+      const active = doc(db, 'xtMatches', id);
+      const archived = doc(db, 'xtArchives', id);
+      const a = await tx.get(active);
+      const h = await tx.get(archived);
 
-    try {
-      busy = true;
+      if (h.exists()) throw Error('Queda já arquivada.');
+      if (a.exists()) tx.delete(active);
+    });
 
-      const id = button.dataset.deleteMatch;
-
-      await runTransaction(db, async tx => {
-        const active = doc(db, 'xtMatches', id);
-        const archived = doc(db, 'xtArchives', id);
-        const activeDoc = await tx.get(active);
-        const archiveDoc = await tx.get(archived);
-
-        if (archiveDoc.exists()) {
-          throw Error('Esta tabela já foi arquivada.');
-        }
-
-        if (activeDoc.exists()) {
-          tx.delete(active);
-        }
-      });
-
-      message('Tabela excluída.');
-
-    } catch (error) {
-      message(error.message, true);
-    } finally {
-      busy = false;
-    }
+    message('Queda excluída.');
+  } catch (err) {
+    message(err.message, true);
+  } finally {
+    busy = false;
   }
-);
+});
 
 /* INICIAR SISTEMA */
 
