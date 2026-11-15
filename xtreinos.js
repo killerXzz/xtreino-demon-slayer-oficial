@@ -36,15 +36,18 @@ const COLORS = {
 
 const days = {
   segunda: 'Segunda-feira',
-  quarta: 'Quarta-feira',
-  sexta: 'Sexta-feira'
+  terca: 'Terça-feira',
+  quarta: 'Quarta-feira'
 };
 
 const weekdays = {
   segunda: 1,
-  quarta: 3,
-  sexta: 5
+  terca: 2,
+  quarta: 3
 };
+
+// Mantém a identificação de resultados antigos de sexta-feira no histórico.
+const legacyDays = { sexta: 'Sexta-feira' };
 
 const maps = ['Bermuda', 'Purgatório', 'Kalahari', 'Nova Terra'];
 const placementPoints = [12, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 0];
@@ -95,7 +98,8 @@ function normalizeTeam(x) {
 }
 
 function archiveMatches() {
-  return archives.filter(a => a.kind === 'match' || a.kind === 'manual');
+  // Inclui também resultados antigos que não tinham o campo kind.
+  return archives.filter(a => a.kind !== 'closure' && Array.isArray(a.results));
 }
 
 function currentMatches() {
@@ -326,9 +330,9 @@ function createControls() {
         A tabela semanal reinicia e a classificação geral continua acumulando.
       </p>
       <div style="display:flex;flex-wrap:wrap;gap:10px">
-        <button type="button" data-finish="segunda">FINALIZAR SEGUNDA</button>
-        <button type="button" data-finish="quarta">FINALIZAR QUARTA</button>
-        <button type="button" data-finish="sexta">FINALIZAR SEXTA</button>
+        <button type="button" data-finish="segunda">FINALIZAR SEGUNDA-FEIRA</button>
+        <button type="button" data-finish="terca">FINALIZAR TERÇA-FEIRA</button>
+        <button type="button" data-finish="quarta">FINALIZAR QUARTA-FEIRA</button>
         <button type="button" data-finish="semana">FINALIZAR SEMANA</button>
       </div>
       <p id="xtFinishInfo"></p>
@@ -355,9 +359,9 @@ function renderTabs() {
   if (dayBox) {
     dayBox.innerHTML = [
       ['geral', 'TODOS OS DIAS'],
-      ['segunda', 'SEGUNDA'],
-      ['quarta', 'QUARTA'],
-      ['sexta', 'SEXTA']
+      ['segunda', 'SEGUNDA-FEIRA'],
+      ['terca', 'TERÇA-FEIRA'],
+      ['quarta', 'QUARTA-FEIRA']
     ].map(([id, label]) => `
       <button type="button" data-day="${id}"
         aria-pressed="${selectedDay === id}"
@@ -466,9 +470,9 @@ function renderRanking() {
       .filter(match => selectedDay === 'geral' || match.day === selectedDay);
 
     if (selectedDay === 'geral') {
-      target.innerHTML = ['segunda', 'quarta', 'sexta'].map(day => `
+      target.innerHTML = ['segunda', 'terca', 'quarta', ...(allMatches.some(m => m.day === 'sexta') ? ['sexta'] : [])].map(day => `
         <section style="margin:18px 0 28px">
-          <h3 style="color:${COLORS.bright}">${esc(days[day])}</h3>
+          <h3 style="color:${COLORS.bright}">${esc(days[day] || legacyDays[day])}</h3>
           ${rankingTable(rankingFor(allMatches.filter(match => match.day === day)))}
         </section>
       `).join('');
@@ -480,11 +484,11 @@ function renderRanking() {
   }
 
   if (selectedDay === 'geral') {
-    const sections = ['segunda', 'quarta', 'sexta'].map(day => {
+    const sections = ['segunda', 'terca', 'quarta', ...(items.some(m => m.day === 'sexta') ? ['sexta'] : [])].map(day => {
       const rows = rankingFor(items.filter(match => match.day === day));
       return `
         <section style="margin:18px 0 28px">
-          <h3 style="color:${COLORS.bright}">${esc(days[day])}</h3>
+          <h3 style="color:${COLORS.bright}">${esc(days[day] || legacyDays[day])}</h3>
           ${rankingTable(rows)}
         </section>
       `;
@@ -502,7 +506,9 @@ function renderHistory() {
 
   const items = shownMatches();
 
-  target.innerHTML = items.length
+  target.innerHTML = (selectedMode === 'historico'
+    ? `<h3 style="color:${COLORS.bright}">📜 Histórico completo de XTREINOS finalizados (${items.length} tabela(s))</h3>`
+    : '') + (items.length
     ? items.map(match => {
         const manual = match.kind === 'manual';
         const results = [...(match.results || [])];
@@ -547,8 +553,9 @@ function renderHistory() {
           <article class="item">
             <h3>${esc(match.date)} — ${title}</h3>
             <p>
-              ${esc(days[match.day] || match.day)}
-              ${match.archivedAt ? '• Arquivada' : ''}
+              ${esc(days[match.day] || legacyDays[match.day] || match.day)}
+              ${match.archivedAt ? '• Finalizado e salvo no Firebase' : ''}
+              ${match.finishLabel ? `• ${esc(match.finishLabel)}` : ''}
             </p>
             <div style="overflow-x:auto">
               <table><thead>${headings}</thead><tbody>${rows}</tbody></table>
@@ -562,7 +569,7 @@ function renderHistory() {
           </article>
         `;
       }).join('')
-    : '<p>Nenhum resultado registrado nesta seleção.</p>';
+    : '<p>Nenhum resultado registrado nesta seleção.</p>');
 }
 
 function renderTeams() {
@@ -609,6 +616,8 @@ async function finish(day) {
   }
 
   busy = true;
+  const finishedAt = new Date().toISOString();
+  const finishBatch = `${finishedAt}_${day}`;
   try {
     await runTransaction(db, async tx => {
       const refs = chosen.map(m => ({
@@ -634,13 +643,19 @@ async function finish(day) {
         tx.set(r.archive, {
           ...activeDocs[i].data(),
           kind: activeDocs[i].data().kind || 'match',
-          archivedAt: serverTimestamp()
+          archivedAt: serverTimestamp(),
+          finishedAt,
+          finishBatch,
+          finishLabel: label
         });
         tx.delete(r.active);
       });
     });
 
-    message(`${label} finalizada com sucesso! Histórico preservado e classificação geral mantida.`);
+    selectedMode = 'historico';
+    selectedDay = 'geral';
+    renderAll();
+    message(`${label} finalizada! ${chosen.length} tabela(s) salvas no histórico do Firebase. Ranking geral e mensal preservados.`);
   } catch (error) {
     message('Erro ao finalizar: ' + error.message, true);
   } finally {
