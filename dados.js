@@ -1,3 +1,4 @@
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 
 import {
@@ -50,8 +51,62 @@ const DEFAULT_RULES =
 const DEFAULT_CONFIG = {
   event: "XTREINO DEMꓳN SLꓥYER",
   capacity: 12,
-  rules: DEFAULT_RULES
+  rules: DEFAULT_RULES,
+
+  // Três espaços exibidos nas páginas do site.
+  days: {
+    segunda: "Segunda-feira",
+    quarta: "Quarta-feira",
+    sexta: "Sexta-feira"
+  }
 };
+
+const WEEKDAY_NAMES = [
+  "Domingo",
+  "Segunda-feira",
+  "Terça-feira",
+  "Quarta-feira",
+  "Quinta-feira",
+  "Sexta-feira",
+  "Sábado"
+];
+
+function normalizeDays(input) {
+  const keys = ["segunda", "quarta", "sexta"];
+
+  const raw = Array.isArray(input)
+    ? Object.fromEntries(
+        keys.map((key, index) => [key, input[index]])
+      )
+    : input;
+
+  if (!raw || typeof raw !== "object") {
+    throw Error("Escolha os três dias do XTREINO.");
+  }
+
+  const result = {};
+
+  for (const key of keys) {
+    const value = clean(raw[key], 30);
+
+    const found = WEEKDAY_NAMES.find(day =>
+      day.toLocaleLowerCase("pt-BR") ===
+      value.toLocaleLowerCase("pt-BR")
+    );
+
+    if (!found) {
+      throw Error("Dia da semana inválido: " + value);
+    }
+
+    result[key] = found;
+  }
+
+  if (new Set(Object.values(result)).size !== 3) {
+    throw Error("Escolha três dias diferentes.");
+  }
+
+  return result;
+}
 
 const col = name => collection(db, name);
 
@@ -87,19 +142,31 @@ function toTeam(snapshot) {
 }
 
 function sortedPublicTeams(teams) {
-  const statusOrder = { approved: 0, reserve: 1, hidden: 2 };
+  const statusOrder = {
+    approved: 0,
+    reserve: 1,
+    hidden: 2
+  };
 
   return teams.slice().sort((a, b) => {
     const statusDifference =
-      (statusOrder[a.status] ?? 3) - (statusOrder[b.status] ?? 3);
+      (statusOrder[a.status] ?? 3) -
+      (statusOrder[b.status] ?? 3);
 
-    if (statusDifference !== 0) return statusDifference;
+    if (statusDifference !== 0) {
+      return statusDifference;
+    }
 
     if (a.status === "approved") {
-      const orderA = Number(a.approvalOrder) || Number.MAX_SAFE_INTEGER;
-      const orderB = Number(b.approvalOrder) || Number.MAX_SAFE_INTEGER;
+      const orderA =
+        Number(a.approvalOrder) || Number.MAX_SAFE_INTEGER;
 
-      if (orderA !== orderB) return orderA - orderB;
+      const orderB =
+        Number(b.approvalOrder) || Number.MAX_SAFE_INTEGER;
+
+      if (orderA !== orderB) {
+        return orderA - orderB;
+      }
     }
 
     const createdA = a.createdAt?.toMillis?.() || 0;
@@ -114,8 +181,10 @@ function sortedRanking(teams) {
   return teams
     .filter(t => t.status === "approved")
     .sort((a, b) =>
-      (Number(b.points) || 0) - (Number(a.points) || 0) ||
-      (Number(b.kills) || 0) - (Number(a.kills) || 0)
+      (Number(b.points) || 0) -
+        (Number(a.points) || 0) ||
+      (Number(b.kills) || 0) -
+        (Number(a.kills) || 0)
     )
     .map((team, index) => ({
       team: team.team,
@@ -160,7 +229,11 @@ function readableError(error) {
       "Permissão negada pelas regras do Firestore."
   };
 
-  return new Error(messages[code] || error?.message || "Erro desconhecido.");
+  return new Error(
+    messages[code] ||
+    error?.message ||
+    "Erro desconhecido."
+  );
 }
 
 const XT = {
@@ -170,7 +243,9 @@ const XT = {
   // AUTENTICAÇÃO
   watchAuth(callback) {
     return onAuthStateChanged(auth, user => {
-      callback(Boolean(user && user.uid === ADMIN_UID));
+      callback(
+        Boolean(user && user.uid === ADMIN_UID)
+      );
     });
   },
 
@@ -184,7 +259,9 @@ const XT = {
 
       if (result.user.uid !== ADMIN_UID) {
         await signOut(auth);
-        throw Error("Esta conta não é administradora.");
+        throw Error(
+          "Esta conta não é administradora."
+        );
       }
 
       return { ok: true };
@@ -218,18 +295,31 @@ const XT = {
     const unsubs = [];
 
     unsubs.push(
-      onSnapshot(doc(db, "settings", "xt"), snap => {
-        data.config = {
-          ...DEFAULT_CONFIG,
-          ...(snap.exists() ? snap.data() : {})
-        };
-        emit();
-      }, onError)
+      onSnapshot(
+        doc(db, "settings", "xt"),
+        snap => {
+          data.config = {
+            ...DEFAULT_CONFIG,
+            ...(snap.exists() ? snap.data() : {})
+          };
+
+          data.config.days = {
+            ...DEFAULT_CONFIG.days,
+            ...(data.config.days || {})
+          };
+
+          emit();
+        },
+        onError
+      )
     );
 
     unsubs.push(
       onSnapshot(col("publicTeams"), snap => {
-        data.teams = sortedPublicTeams(snap.docs.map(toTeam));
+        data.teams = sortedPublicTeams(
+          snap.docs.map(toTeam)
+        );
+
         emit();
       }, onError)
     );
@@ -257,16 +347,25 @@ const XT = {
   watchRegistrations(callback, onError) {
     requireAdmin();
 
-    return onSnapshot(col("registrations"), snap => {
-      callback(snap.docs.map(toTeam));
-    }, onError);
+    return onSnapshot(
+      col("registrations"),
+      snap => {
+        callback(snap.docs.map(toTeam));
+      },
+      onError
+    );
   },
 
   // CADASTRO DE LINE
   async register(team) {
     const required = [
-      "name", "captain", "phone",
-      "rush1", "rush2", "grenade", "support"
+      "name",
+      "captain",
+      "phone",
+      "rush1",
+      "rush2",
+      "grenade",
+      "support"
     ];
 
     const cleaned = {};
@@ -275,7 +374,9 @@ const XT = {
       cleaned[key] = clean(team[key], 50);
 
       if (!cleaned[key]) {
-        throw Error("Preencha todos os campos obrigatórios.");
+        throw Error(
+          "Preencha todos os campos obrigatórios."
+        );
       }
     }
 
@@ -287,16 +388,21 @@ const XT = {
 
     if (
       logo.length > 80000 ||
-      (logo &&
-        !/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(logo))
+      (
+        logo &&
+        !/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(logo)
+      )
     ) {
-      throw Error("Logo inválida ou muito grande.");
+      throw Error(
+        "Logo inválida ou muito grande."
+      );
     }
 
-    const [publicSnap, configSnap] = await Promise.all([
-      getDocs(col("publicTeams")),
-      getDoc(doc(db, "settings", "xt"))
-    ]);
+    const [publicSnap, configSnap] =
+      await Promise.all([
+        getDocs(col("publicTeams")),
+        getDoc(doc(db, "settings", "xt"))
+      ]);
 
     const capacity = Number(
       configSnap.exists()
@@ -309,7 +415,9 @@ const XT = {
     ).length;
 
     if (confirmed >= capacity) {
-      throw Error("Todas as vagas estão ocupadas.");
+      throw Error(
+        "Todas as vagas estão ocupadas."
+      );
     }
 
     await addDoc(col("registrations"), {
@@ -327,7 +435,8 @@ const XT = {
 
     return {
       ok: true,
-      message: "Inscrição enviada com sucesso!"
+      message:
+        "Inscrição enviada com sucesso!"
     };
   },
 
@@ -335,7 +444,14 @@ const XT = {
   async setStatus(id, status) {
     requireAdmin();
 
-    if (!["approved", "reserve", "rejected", "pending"].includes(status)) {
+    if (
+      ![
+        "approved",
+        "reserve",
+        "rejected",
+        "pending"
+      ].includes(status)
+    ) {
       throw Error("Status inválido.");
     }
 
@@ -343,7 +459,9 @@ const XT = {
     const snap = await getDoc(ref);
 
     if (!snap.exists()) {
-      throw Error("Inscrição não encontrada.");
+      throw Error(
+        "Inscrição não encontrada."
+      );
     }
 
     const team = snap.data();
@@ -353,7 +471,9 @@ const XT = {
     const legacyOrderUpdates = [];
 
     if (status === "approved") {
-      const configSnap = await getDoc(doc(db, "settings", "xt"));
+      const configSnap = await getDoc(
+        doc(db, "settings", "xt")
+      );
 
       const capacity = Number(
         configSnap.exists()
@@ -361,51 +481,84 @@ const XT = {
           : DEFAULT_CONFIG.capacity
       );
 
-      const publicSnap = await getDocs(col("publicTeams"));
-      const approvedDocs = publicSnap.docs.filter(s =>
-        s.id !== id && s.data().status === "approved"
+      const publicSnap = await getDocs(
+        col("publicTeams")
+      );
+
+      const approvedDocs = publicSnap.docs.filter(
+        s =>
+          s.id !== id &&
+          s.data().status === "approved"
       );
 
       if (approvedDocs.length >= capacity) {
-        throw Error("Todas as vagas confirmadas estão ocupadas.");
+        throw Error(
+          "Todas as vagas confirmadas estão ocupadas."
+        );
       }
 
-      // Migra as lines antigas sem posição usando a data original da inscrição.
+      // Organiza as equipes antigas sem posição.
       const usedOrders = new Set();
 
       for (const approvedDoc of approvedDocs) {
-        const order = approvedDoc.data().approvalOrder;
+        const order =
+          approvedDoc.data().approvalOrder;
 
-        if (Number.isInteger(order) && order > 0) {
+        if (
+          Number.isInteger(order) &&
+          order > 0
+        ) {
           usedOrders.add(order);
         }
       }
 
-      const legacyDocs = approvedDocs.filter(s =>
-        !Number.isInteger(s.data().approvalOrder)
+      const legacyDocs = approvedDocs.filter(
+        s =>
+          !Number.isInteger(
+            s.data().approvalOrder
+          )
       );
 
-      const legacyWithDates = await Promise.all(legacyDocs.map(async s => {
-        const registrationSnap = await getDoc(
-          doc(db, "registrations", s.id)
+      const legacyWithDates =
+        await Promise.all(
+          legacyDocs.map(async s => {
+            const registrationSnap =
+              await getDoc(
+                doc(
+                  db,
+                  "registrations",
+                  s.id
+                )
+              );
+
+            const createdAt =
+              registrationSnap.exists()
+                ? registrationSnap
+                    .data()
+                    .createdAt
+                    ?.toMillis?.() || 0
+                : 0;
+
+            return {
+              snapshot: s,
+              createdAt
+            };
+          })
         );
-
-        const createdAt = registrationSnap.exists()
-          ? registrationSnap.data().createdAt?.toMillis?.() || 0
-          : 0;
-
-        return { snapshot: s, createdAt };
-      }));
 
       legacyWithDates.sort((a, b) =>
         a.createdAt - b.createdAt ||
-        a.snapshot.id.localeCompare(b.snapshot.id)
+        a.snapshot.id.localeCompare(
+          b.snapshot.id
+        )
       );
 
       let candidateOrder = 1;
 
       for (const item of legacyWithDates) {
-        while (usedOrders.has(candidateOrder)) {
+        while (
+          usedOrders.has(candidateOrder)
+        ) {
           candidateOrder += 1;
         }
 
@@ -418,41 +571,58 @@ const XT = {
         candidateOrder += 1;
       }
 
-      nextApprovalOrder = Math.max(0, ...usedOrders) + 1;
+      nextApprovalOrder =
+        Math.max(0, ...usedOrders) + 1;
     }
 
     const batch = writeBatch(db);
 
     for (const item of legacyOrderUpdates) {
-      batch.update(doc(db, "publicTeams", item.id), {
-        approvalOrder: item.order
-      });
+      batch.update(
+        doc(db, "publicTeams", item.id),
+        {
+          approvalOrder: item.order
+        }
+      );
     }
 
     batch.update(ref, { status });
 
-    if (status === "approved" || status === "reserve") {
-      const current = await getDoc(publicRef);
-      const old = current.exists() ? current.data() : {};
+    if (
+      status === "approved" ||
+      status === "reserve"
+    ) {
+      const current =
+        await getDoc(publicRef);
+
+      const old = current.exists()
+        ? current.data()
+        : {};
 
       const publicData = {
         team: team.team,
         logo: team.logo || "",
         status,
-        placement: Number(old.placement) || 0,
-        kills: Number(old.kills) || 0,
-        points: Number(old.points) || 0
+        placement:
+          Number(old.placement) || 0,
+        kills:
+          Number(old.kills) || 0,
+        points:
+          Number(old.points) || 0
       };
 
       if (status === "approved") {
         if (
           old.status === "approved" &&
-          Number.isInteger(old.approvalOrder)
+          Number.isInteger(
+            old.approvalOrder
+          )
         ) {
-          // Reaprovar uma line confirmada mantém sua posição.
-          publicData.approvalOrder = old.approvalOrder;
+          publicData.approvalOrder =
+            old.approvalOrder;
         } else {
-          publicData.approvalOrder = nextApprovalOrder;
+          publicData.approvalOrder =
+            nextApprovalOrder;
         }
       }
 
@@ -468,20 +638,35 @@ const XT = {
   },
 
   // SALVAR PONTUAÇÃO
-  async saveScore(id, placement, kills, points) {
+  async saveScore(
+    id,
+    placement,
+    kills,
+    points
+  ) {
     requireAdmin();
 
-    const ref = doc(db, "publicTeams", id);
+    const ref = doc(
+      db,
+      "publicTeams",
+      id
+    );
+
     const snap = await getDoc(ref);
 
     if (!snap.exists()) {
-      throw Error("Equipe não encontrada.");
+      throw Error(
+        "Equipe não encontrada."
+      );
     }
 
     await updateDoc(ref, {
-      placement: validateScore(placement),
-      kills: validateScore(kills),
-      points: validateScore(points)
+      placement:
+        validateScore(placement),
+      kills:
+        validateScore(kills),
+      points:
+        validateScore(points)
     });
 
     return { ok: true };
@@ -493,8 +678,13 @@ const XT = {
 
     const batch = writeBatch(db);
 
-    batch.delete(doc(db, "registrations", id));
-    batch.delete(doc(db, "publicTeams", id));
+    batch.delete(
+      doc(db, "registrations", id)
+    );
+
+    batch.delete(
+      doc(db, "publicTeams", id)
+    );
 
     await batch.commit();
 
@@ -505,30 +695,71 @@ const XT = {
   async saveConfig(config) {
     requireAdmin();
 
-    const capacity = Number(config.capacity);
+    const capacity =
+      Number(config.capacity);
 
     if (
       !Number.isInteger(capacity) ||
       capacity < 1 ||
       capacity > 100
     ) {
-      throw Error("Limite de equipes inválido.");
+      throw Error(
+        "Limite de equipes inválido."
+      );
     }
 
-    const event = clean(config.event, 100);
-    const rules = clean(config.rules, 3000);
+    const event =
+      clean(config.event, 100);
+
+    const rules =
+      clean(config.rules, 3000);
 
     if (!event || !rules) {
-      throw Error("Preencha todas as configurações.");
+      throw Error(
+        "Preencha todas as configurações."
+      );
     }
 
-    await setDoc(doc(db, "settings", "xt"), {
-      event,
-      capacity,
-      rules
-    });
+    // merge preserva os dias salvos.
+    await setDoc(
+      doc(db, "settings", "xt"),
+      {
+        event,
+        capacity,
+        rules
+      },
+      { merge: true }
+    );
 
     return { ok: true };
+  },
+
+  // NOVA FUNÇÃO:
+  // SALVAR DIAS DO XTREINO
+  // SOMENTE ADMINISTRADOR
+  async saveDays(days) {
+    requireAdmin();
+
+    const validated =
+      normalizeDays(days);
+
+    try {
+      await setDoc(
+        doc(db, "settings", "xt"),
+        {
+          days: validated
+        },
+        { merge: true }
+      );
+
+      return {
+        ok: true,
+        days: validated
+      };
+
+    } catch (error) {
+      throw readableError(error);
+    }
   },
 
   // PARCERIAS
@@ -536,32 +767,57 @@ const XT = {
     requireAdmin();
 
     const data = {
-      name: clean(partner.name, 80),
-      description: clean(partner.description, 500),
-      url: clean(partner.url, 500),
-      logo: String(partner.logo || "")
+      name:
+        clean(partner.name, 80),
+      description:
+        clean(partner.description, 500),
+      url:
+        clean(partner.url, 500),
+      logo:
+        String(partner.logo || "")
     };
 
     if (!data.name) {
-      throw Error("Informe o nome da parceria.");
+      throw Error(
+        "Informe o nome da parceria."
+      );
     }
 
-    if (data.url && !/^https:\/\//i.test(data.url)) {
-      throw Error("O link precisa começar com https://");
+    if (
+      data.url &&
+      !/^https:\/\//i.test(data.url)
+    ) {
+      throw Error(
+        "O link precisa começar com https://"
+      );
     }
 
     if (
       data.logo.length > 80000 ||
-      (data.logo &&
-        !/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(data.logo))
+      (
+        data.logo &&
+        !/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(
+          data.logo
+        )
+      )
     ) {
       throw Error("Logo inválida.");
     }
 
     if (partner.id) {
-      await setDoc(doc(db, "partners", partner.id), data);
+      await setDoc(
+        doc(
+          db,
+          "partners",
+          partner.id
+        ),
+        data
+      );
     } else {
-      await addDoc(col("partners"), data);
+      await addDoc(
+        col("partners"),
+        data
+      );
     }
 
     return { ok: true };
@@ -570,26 +826,40 @@ const XT = {
   async deletePartner(id) {
     requireAdmin();
 
-    await deleteDoc(doc(db, "partners", id));
+    await deleteDoc(
+      doc(db, "partners", id)
+    );
 
     return { ok: true };
   },
 
   // RANKING
   async getRanking() {
-    const snap = await getDocs(col("publicTeams"));
-    return sortedRanking(snap.docs.map(toTeam));
+    const snap = await getDocs(
+      col("publicTeams")
+    );
+
+    return sortedRanking(
+      snap.docs.map(toTeam)
+    );
   },
 
   // HISTÓRICO
   async getHistory() {
-    const snap = await getDocs(col("history"));
+    const snap = await getDocs(
+      col("history")
+    );
 
     return snap.docs
       .map(toTeam)
       .sort((a, b) => {
-        const ta = a.finishedAt?.toMillis?.() || 0;
-        const tb = b.finishedAt?.toMillis?.() || 0;
+        const ta =
+          a.finishedAt
+            ?.toMillis?.() || 0;
+
+        const tb =
+          b.finishedAt
+            ?.toMillis?.() || 0;
 
         return tb - ta;
       });
@@ -599,55 +869,98 @@ const XT = {
   async finish(confirmText) {
     requireAdmin();
 
-    if (confirmText !== "FINALIZAR XT") {
-      throw Error("Digite FINALIZAR XT para confirmar.");
+    if (
+      confirmText !== "FINALIZAR XT"
+    ) {
+      throw Error(
+        "Digite FINALIZAR XT para confirmar."
+      );
     }
 
-    const [registrations, teams, configSnap] = await Promise.all([
-      getDocs(col("registrations")),
-      getDocs(col("publicTeams")),
-      getDoc(doc(db, "settings", "xt"))
+    const [
+      registrations,
+      teams,
+      configSnap
+    ] = await Promise.all([
+      getDocs(
+        col("registrations")
+      ),
+      getDocs(
+        col("publicTeams")
+      ),
+      getDoc(
+        doc(db, "settings", "xt")
+      )
     ]);
 
-    if (registrations.empty && teams.empty) {
-      throw Error("Nenhuma equipe cadastrada para finalizar.");
+    if (
+      registrations.empty &&
+      teams.empty
+    ) {
+      throw Error(
+        "Nenhuma equipe cadastrada para finalizar."
+      );
     }
 
     const config = {
       ...DEFAULT_CONFIG,
-      ...(configSnap.exists() ? configSnap.data() : {})
+      ...(configSnap.exists()
+        ? configSnap.data()
+        : {})
     };
 
-    const currentTeams = teams.docs.map(toTeam);
-    const ranking = sortedRanking(currentTeams);
+    const currentTeams =
+      teams.docs.map(toTeam);
+
+    const ranking =
+      sortedRanking(currentTeams);
 
     const reserves = currentTeams
-      .filter(t => t.status === "reserve")
+      .filter(
+        t => t.status === "reserve"
+      )
       .map(t => ({
         team: t.team,
         status: "reserve",
         position: 0,
-        placement: Number(t.placement) || 0,
-        kills: Number(t.kills) || 0,
-        points: Number(t.points) || 0
+        placement:
+          Number(t.placement) || 0,
+        kills:
+          Number(t.kills) || 0,
+        points:
+          Number(t.points) || 0
       }));
 
-    const operations = registrations.size + teams.size + 2;
+    const operations =
+      registrations.size +
+      teams.size +
+      2;
 
     if (operations > 500) {
-      throw Error("Muitas inscrições para finalizar em uma operação.");
+      throw Error(
+        "Muitas inscrições para finalizar em uma operação."
+      );
     }
 
-    const batch = writeBatch(db);
-    const historyRef = doc(col("history"));
+    const batch =
+      writeBatch(db);
+
+    const historyRef =
+      doc(col("history"));
 
     // SALVAR HISTÓRICO
     batch.set(historyRef, {
       event: config.event,
-      finishedAt: serverTimestamp(),
-      teamsCount: ranking.length,
-      registrationsCount: registrations.size,
-      ranking: [...ranking, ...reserves]
+      finishedAt:
+        serverTimestamp(),
+      teamsCount:
+        ranking.length,
+      registrationsCount:
+        registrations.size,
+      ranking: [
+        ...ranking,
+        ...reserves
+      ]
     });
 
     // REMOVER INSCRIÇÕES
@@ -661,19 +974,29 @@ const XT = {
     });
 
     // LIBERAR 12 VAGAS
-    batch.set(doc(db, "settings", "xt"), {
-      event: config.event,
-      capacity: 12,
-      rules: config.rules || DEFAULT_RULES
-    });
+    // SEM APAGAR OS DIAS
+    batch.set(
+      doc(db, "settings", "xt"),
+      {
+        event: config.event,
+        capacity: 12,
+        rules:
+          config.rules ||
+          DEFAULT_RULES,
+        days: {
+          ...DEFAULT_CONFIG.days,
+          ...(config.days || {})
+        }
+      }
+    );
 
-    // EXECUTAR TUDO JUNTO
     await batch.commit();
 
     return {
       ok: true,
       removed: teams.size,
-      registrationsRemoved: registrations.size,
+      registrationsRemoved:
+        registrations.size,
       availableSlots: 12,
       historyId: historyRef.id,
       message:
@@ -693,25 +1016,52 @@ const XT = {
       partners,
       settings
     ] = await Promise.all([
-      getDocs(col("registrations")),
-      getDocs(col("publicTeams")),
-      getDocs(col("history")),
-      getDocs(col("partners")),
-      getDoc(doc(db, "settings", "xt"))
+      getDocs(
+        col("registrations")
+      ),
+      getDocs(
+        col("publicTeams")
+      ),
+      getDocs(
+        col("history")
+      ),
+      getDocs(
+        col("partners")
+      ),
+      getDoc(
+        doc(db, "settings", "xt")
+      )
     ]);
 
     return JSON.stringify({
-      exportedAt: new Date().toISOString(),
-      config: settings.exists()
-        ? settings.data()
-        : DEFAULT_CONFIG,
-      registrations: registrations.docs.map(toTeam),
-      teams: teams.docs.map(toTeam),
-      history: history.docs.map(toTeam),
-      partners: partners.docs.map(toTeam)
+      exportedAt:
+        new Date().toISOString(),
+
+      config:
+        settings.exists()
+          ? settings.data()
+          : DEFAULT_CONFIG,
+
+      registrations:
+        registrations.docs.map(toTeam),
+
+      teams:
+        teams.docs.map(toTeam),
+
+      history:
+        history.docs.map(toTeam),
+
+      partners:
+        partners.docs.map(toTeam)
+
     }, (key, value) => {
-      if (value && typeof value.toDate === "function") {
-        return value.toDate().toISOString();
+      if (
+        value &&
+        typeof value.toDate === "function"
+      ) {
+        return value
+          .toDate()
+          .toISOString();
       }
 
       return value;
