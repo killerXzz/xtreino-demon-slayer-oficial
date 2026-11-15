@@ -716,9 +716,9 @@ section.section#adminSection {
       </h2>
 
       <p>
-        Acompanhe as tabelas de segunda, quarta e sexta-feira,
+        <span id="xtScheduleDescription">Acompanhe as tabelas de segunda, quarta e sexta-feira,
         a classificação semanal e o ranking geral acumulado
-        de todas as semanas.
+        de todas as semanas.</span>
       </p>
 
       <div class="maps">
@@ -733,17 +733,17 @@ section.section#adminSection {
 
     <div class="days">
       <div class="day">
-        <strong>SEGUNDA</strong>
+        <strong data-schedule-slot="segunda">SEGUNDA</strong>
         <span>4 QUEDAS • LBFF 2021</span>
       </div>
 
       <div class="day">
-        <strong>QUARTA</strong>
+        <strong data-schedule-slot="terca">QUARTA</strong>
         <span>4 QUEDAS • LBFF 2021</span>
       </div>
 
       <div class="day">
-        <strong>SEXTA</strong>
+        <strong data-schedule-slot="quarta">SEXTA</strong>
         <span>4 QUEDAS • LBFF 2021</span>
       </div>
     </div>
@@ -842,8 +842,8 @@ section.section#adminSection {
               Dia do XTREINO
               <select id="bulkMatchDay" required>
                 <option value="segunda">Segunda-feira</option>
-                <option value="quarta">Quarta-feira</option>
-                <option value="sexta">Sexta-feira</option>
+                <option value="terca">Quarta-feira</option>
+                <option value="quarta">Sexta-feira</option>
               </select>
             </label>
           </div>
@@ -868,7 +868,7 @@ section.section#adminSection {
         <p class="notice">
           A pontuação digitada é salva como total final da equipe naquele XT.
           Ao colar novamente para a mesma data e dia, a lista anterior é substituída.
-          No ranking mensal, os resultados de segunda, quarta e sexta entram
+          No ranking mensal, os resultados dos três dias configurados entram
           juntos na classificação do mês correspondente.
         </p>
 
@@ -891,11 +891,11 @@ section.section#adminSection {
               📅 FINALIZAR SEGUNDA
             </button>
 
-            <button type="button" data-finish="quarta">
+            <button type="button" data-finish="terca">
               📅 FINALIZAR QUARTA
             </button>
 
-            <button type="button" data-finish="sexta">
+            <button type="button" data-finish="quarta">
               📅 FINALIZAR SEXTA
             </button>
 
