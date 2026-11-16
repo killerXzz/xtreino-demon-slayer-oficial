@@ -47,6 +47,29 @@ small{color:#d4b2bc}
 .tabs button{background:#35101d}
 .tabs button.active{background:#a91631}
 .preview{display:none;width:110px;height:110px;object-fit:contain;border-radius:12px;border:1px solid #74263b;margin:8px 0}
+
+/* Painel ADM no estilo do XTreino */
+#admin{background:linear-gradient(145deg,#0b080e,#140812);border:1px solid #9d2940;padding:22px;box-shadow:0 12px 35px #0008}
+#admin h2{text-align:center;font-size:23px;margin:10px 0 18px}
+#admin .admin-kicker{font-size:11px;letter-spacing:2px;color:#ff526a;font-weight:800}
+#admin .admin-panel{background:#230b13;border:1px solid #9a3348;border-radius:13px;padding:18px;margin-top:18px}
+#admin .admin-panel h3{margin:3px 0 18px;font-size:18px}
+#admin .admin-status{font-size:14px;color:#d4b2bc;margin:10px 0}
+#admin .admin-actions{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}
+#admin .admin-actions button{padding:10px 14px}
+#admin #sair{background:#5a2634}
+#admin .admin-entry{background:#16080e;border:1px solid #633040;border-radius:11px;padding:14px;margin:10px 0}
+#admin .admin-entry .slot{border:0;padding:0 0 10px}
+#admin .admin-entry small{display:block;line-height:1.7;overflow-wrap:anywhere}
+#admin .admin-entry .admin-entry-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+#admin .admin-entry button{padding:9px 12px;font-size:13px}
+#admin .admin-entry button.danger{background:#8d1730}
+#admin #adminMatches .match{background:#16080e}
+#admin .admin-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:14px 0}
+#admin .admin-summary>div{background:#200a13;border:1px solid #682537;border-radius:10px;padding:12px}
+#admin .admin-summary strong{display:block;font-size:24px;color:#ff6579}
+#admin .admin-empty{color:#c6a4ae;font-size:14px}
+@media(max-width:600px){#admin{padding:14px}#admin .admin-panel{padding:12px}}
 </style>
 </head>
 <body>
@@ -153,50 +176,47 @@ small{color:#d4b2bc}
 </section>
 
 <section id="admin" class="card">
-<h2>🔒 Painel ADM</h2>
-<p class="muted">Acesso restrito. Não coloque a senha no HTML ou no GitHub.</p>
-
-<div id="loginBox">
-<label>E-mail ADM Firebase
-<input id="adminEmail" type="email" autocomplete="username">
-</label>
-<label>Senha ADM Firebase
-<input id="adminPassword" type="password" autocomplete="current-password">
-</label>
+<div class="admin-kicker">ACESSO RESTRITO</div>
+<h2>🔴 Painel ADM</h2>
+<p class="muted">Gerencie o campeonato com o mesmo administrador do XTreino.</p>
+<div id="loginBox" class="admin-panel">
+<h3>🔐 Entrar como administrador</h3>
+<label>E-mail ADM Firebase<input id="adminEmail" type="email" autocomplete="username"></label>
+<label>Senha ADM Firebase<input id="adminPassword" type="password" autocomplete="current-password"></label>
 <button type="button" id="entrar">Entrar com Firebase</button>
 </div>
-
-<button type="button" id="sair" class="hidden">Sair do ADM</button>
-<button type="button" id="atualizarAdmin" class="hidden">Atualizar equipes</button>
-<p id="adminMsg" class="msg"></p>
-
+<p id="adminConnected" class="admin-status hidden">✅ Administrador conectado.</p>
+<div class="admin-actions">
+<button type="button" id="sair" class="hidden">Sair da conta</button>
+<button type="button" id="atualizarAdmin" class="hidden">🔄 Atualizar equipes</button>
+</div>
+<p id="adminMsg" class="msg" role="status"></p>
 <div id="adminArea" class="hidden">
-<h3>Adicionar equipe manualmente</h3>
-
+<div class="admin-summary">
+<div><strong id="admConfirmadas">0</strong>Equipes confirmadas</div>
+<div><strong id="admPendentes">0</strong>Inscrições pendentes</div>
+<div><strong id="admVagas">24</strong>Vagas disponíveis</div>
+</div>
+<div class="admin-panel">
+<h3>📋 Gerenciar inscrições</h3>
+<div id="adminTeams"></div>
+</div>
+<div class="admin-panel">
+<h3>➕ Adicionar equipe manualmente</h3>
 <form id="manual">
 <div class="formgrid">
-<label>Nome da equipe
-<input name="equipe" required>
-</label>
-<label>Logo da equipe
-<input type="file" id="logoManual" accept="image/*" required>
-<img id="logoManualPreview" class="preview" alt="Prévia da logo">
-</label>
-<label>Capitão
-<input name="capitao" required>
-</label>
-<label>WhatsApp
-<input name="whatsapp" required>
-</label>
+<label>Nome da equipe<input name="equipe" required maxlength="50"></label>
+<label>Logo da equipe<input type="file" id="logoManual" accept="image/*" required><img id="logoManualPreview" class="preview" alt="Prévia da logo"></label>
+<label>Capitão<input name="capitao" required maxlength="60"></label>
+<label>WhatsApp<input name="whatsapp" required maxlength="25"></label>
 </div>
 <button type="submit">Adicionar equipe</button>
 </form>
-
-<h3>Equipes confirmadas</h3>
-<div id="adminTeams"></div>
-
-<h3>Editar confrontos e vencedores</h3>
+</div>
+<div class="admin-panel">
+<h3>⚔️ Editar confrontos e vencedores</h3>
 <div id="adminMatches"></div>
+</div>
 </div>
 </section>
 </main>
@@ -577,6 +597,7 @@ async function adminRefresh() {
 
   $("adminArea").classList.remove("hidden");
   $("loginBox").classList.add("hidden");
+  $("adminConnected").classList.remove("hidden");
   $("sair").classList.remove("hidden");
   $("atualizarAdmin").classList.remove("hidden");
 
@@ -616,9 +637,11 @@ onAuthStateChanged(auth, async user => {
     } catch (e) {
       $("adminMsg").textContent = e.message;
       $("adminArea").classList.add("hidden");
+      $("adminConnected").classList.add("hidden");
     }
   } else {
     $("adminArea").classList.add("hidden");
+    $("adminConnected").classList.add("hidden");
     $("loginBox").classList.remove("hidden");
     $("sair").classList.add("hidden");
     $("atualizarAdmin").classList.add("hidden");
@@ -658,16 +681,26 @@ function renderAdmin() {
   const root = $("adminTeams");
   root.replaceChildren();
 
-  inscricoes.forEach(t => {
-    const row = equipeElemento(t);
+  const confirmadas = teams.length;
+  $("admConfirmadas").textContent = confirmadas;
+  $("admPendentes").textContent = inscricoes.filter(t => t.status !== "confirmada" && t.status !== "pago").length;
+  $("admVagas").textContent = Math.max(0, 24 - confirmadas);
+  if (!inscricoes.length) root.append(node("p", "Nenhuma inscrição cadastrada.", "admin-empty"));
 
-    row.append(
-      node(
-        "small",
-        " — " + (t.status || "pendente") +
-        " — Slot " + (t.slot || "—")
-      )
-    );
+  inscricoes.forEach(t => {
+    const card = node("div", undefined, "admin-entry");
+    const row = equipeElemento(t);
+    card.append(row);
+    const details = node("small");
+    details.textContent = [
+      "Status: " + (t.status || "pendente") + " | Slot: " + (t.slot || "—"),
+      t.capitao ? "Capitão: " + t.capitao : "",
+      t.whatsapp ? "WhatsApp: " + t.whatsapp : "",
+      ...[1,2,3,4].map(n => t["jogador" + n] ? "Jogador " + n + ": " + t["jogador" + n] : "")
+    ].filter(Boolean).join("\n");
+    details.style.whiteSpace = "pre-line";
+    card.append(details);
+    const actions = node("div", undefined, "admin-entry-actions");
 
     if (t.status !== "confirmada") {
       const ok = node("button", "Confirmar manualmente");
@@ -689,7 +722,7 @@ function renderAdmin() {
         }
       };
 
-      row.append(ok);
+      actions.append(ok);
     }
 
     const del = node("button", "Excluir");
@@ -711,8 +744,10 @@ function renderAdmin() {
       }
     };
 
-    row.append(del);
-    root.append(row);
+    del.classList.add("danger");
+    actions.append(del);
+    card.append(actions);
+    root.append(card);
   });
 
   const area = $("adminMatches");
