@@ -1,20 +1,20 @@
 
-const express = require("express");
+const http = require("http");
 
-const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
-
-app.get("/", (req, res) => {
-  res.json({
-    status: "online",
-    campeonato: "DEMON SLAYER 4V4",
-    mensagem: "Servidor funcionando!"
+const server = http.createServer((req, res) => {
+  res.writeHead(200, {
+    "Content-Type": "application/json"
   });
+
+  res.end(JSON.stringify({
+    status: "online",
+    mensagem: "Servidor DEMON SLAYER funcionando!"
+  }));
 });
 
-
-app.listen(process.env.PORT || 3000, "0.0.0.0", () => {
-  console.log("Servidor iniciado!");
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`Servidor funcionando na porta ${PORT}`);
 });
+
