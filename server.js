@@ -1,548 +1,916 @@
 
+"use strict";
+
 const http = require("http");
+const crypto = require("crypto");
 const admin = require("firebase-admin");
 
 const PORT = Number(process.env.PORT || 3000);
-const PRICE = 10;
-const ORIGIN = "https://killerxzz.github.io";
-const MP = process.env.MP_ACCESS_TOKEN;
+const MP_TOKEN = process.env.MP_ACCESS_TOKEN;
 const ADMIN_UID = process.env.FIREBASE_ADMIN_UID;
 
+const SITE = "https://killerxzz.github.io";
+const PRECO = 10;
+const TOTAL_VAGAS = 24;
+const MAX_BODY = 450000;
+const MAX_LOGO = 180000;
+
+const FASES = {
+  "Oitavas de final": 8,
+  "Quartas de final": 4,
+  "Semifinal": 2,
+  "Final": 1
+};
+
+// CONFIGURAÇÃO FIREBASE
 if (!process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
-  throw Error("Configure FIREBASE_SERVICE_ACCOUNT_JSON no Render");
+  throw new Error(
+    "Configure FIREBASE_SERVICE_ACCOUNT_JSON no Render"
+  );
 }
 
+if (!ADMIN_UID) {
+  throw new Error(
+    "Configure FIREBASE_ADMIN_UID no Render"
+  );
+}
+
+const serviceAccount = JSON.parse(
+  process.env.FIREBASE_SERVICE_ACCOUNT_JSON
+);
+
 admin.initializeApp({
-  credential: admin.credential.cert(
-    JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON)
-  )
+  credential: admin.credential.cert(serviceAccount)
 });
 
 const db = admin.firestore();
-const teams = db.collection("campeonato4v4_equipes");
-const matches = db.collection("campeonato4v4_confrontos");
-const stateRef = db.collection("campeonato4v4_config").doc("vagas");
 
-function reply(res, status, data) {
+const equipesRef = db.collection("campeonato4v4_equipes");
+const confrontosRef = db.collection("campeonato4v4_confrontos");
+const configRef = db
+  .collection("campeonato4v4_config")
+  .doc("vagas");
+
+// RESPOSTAS DO SERVIDOR
+function responder(res, status, dados) {
   res.writeHead(status, {
     "Content-Type": "application/json; charset=utf-8",
-    "Access-Control-Allow-Origin": ORIGIN,
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Origin": SITE,
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Cache-Control": "no-store"
+    "Access-Control-Allow-Headers":
+      "Content-Type, Authorization",
+    "Cache-Control": "no-store",
+    "Vary": "Origin"
   });
-  res.end(JSON.stringify(data));
+
+  if (status === 204) {
+    return res.end();
+  }
+
+  res.end(JSON.stringify(dados));
 }
 
-function fail(message, status = 400) {
-  const e = Error(message);
+function erro(mensagem, status = 400) {
+  const e = new Error(mensagem);
   e.status = status;
   throw e;
 }
 
-async function body(req) {
-  let s = "";
-  for await (const b of req) {
-    s += b;
-    if (s.length > 15000) {
-      fail("Dados muito grandes", 413);
+function texto(valor, limite = 60) {
+  if (typeof valor !== "string") return "";
+  return valor.trim().slice(0, limite);
+}
+
+function validarId(id) {
+  return typeof id === "string" &&
+    /^[A-Za-z0-9]{15,100}$/.test(id);
+}
+
+// RECEBER JSON COM LOGO
+async function lerJSON(req) {
+  let conteudo = "";
+  let bytes = 0;
+
+  for await (const parte of req) {
+    bytes += parte.length;
+
+    if (bytes > MAX_BODY) {
+      erro("Imagem ou requisição muito grande", 413);
     }
+
+    conteudo += parte.toString("utf8");
   }
+
   try {
-    return JSON.parse(s);
-  } catch {
-    fail("JSON inválido");
-  }
-}
+    const dados = JSON.parse(conteudo);
 
-function str(x, max = 60) {
-  return typeof x === "string" ? x.trim().slice(0, max) : "";
-}
-
-function logo(x) {
-  const v = str(x, 500);
-  try {
-    const u = new URL(v);
-    return u.protocol === "https:" ? v : "";
-  } catch {
-    return "";
-  }
-}
-
-async function authenticate(req) {
-  const token = (req.headers.authorization || "")
-    .match(/^Bearer (.+)$/)?.[1];
-
-  if (!token) fail("Faça login no ADM Firebase", 401);
-
-  let decoded;
-  try {
-    decoded = await admin.auth().verifyIdToken(token, true);
-  } catch {
-    fail("Login expirado ou inválido", 401);
-  }
-
-  if (ADMIN_UID && decoded.uid !== ADMIN_UID) {
-    fail("Conta não autorizada", 403);
-  }
-
-  const doc = await db.collection("admins").doc(decoded.uid).get();
-  if (!doc.exists) {
-    fail("Conta não cadastrada em admins", 403);
-  }
-
-  return decoded;
-}
-
-async function mp(path, opts = {}) {
-  if (!MP) fail("Configure MP_ACCESS_TOKEN", 503);
-
-  const r = await fetch("https://api.mercadopago.com" + path, {
-    ...opts,
-    headers: {
-      Authorization: "Bearer " + MP,
-      "Content-Type": "application/json",
-      ...(opts.headers || {})
+    if (!dados || typeof dados !== "object" ||
+        Array.isArray(dados)) {
+      erro("Dados inválidos");
     }
+
+    return dados;
+  } catch (e) {
+    if (e.status) throw e;
+    erro("JSON inválido");
+  }
+}
+
+// LOGO: HTTPS OU IMAGEM PROCESSADA EM BASE64
+function validarLogo(valor) {
+  if (typeof valor !== "string") {
+    erro("Selecione a logo da equipe");
+  }
+
+  // Aceita JPEG, PNG e WebP comprimidos pelo HTML
+  const match = valor.match(
+    /^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/]+={0,2})$/
+  );
+
+  if (match) {
+    if (valor.length > MAX_LOGO) {
+      erro("A logo processada ficou muito grande", 413);
+    }
+
+    const imagem = Buffer.from(match[2], "base64");
+
+    if (imagem.length < 20 ||
+        imagem.length > 135000) {
+      erro("Tamanho da logo inválido");
+    }
+
+    const tipo = match[1];
+
+    const jpeg =
+      imagem[0] === 0xff &&
+      imagem[1] === 0xd8 &&
+      imagem[2] === 0xff;
+
+    const png =
+      imagem.subarray(0, 8).equals(
+        Buffer.from([
+          137, 80, 78, 71, 13, 10, 26, 10
+        ])
+      );
+
+    const webp =
+      imagem.toString("ascii", 0, 4) === "RIFF" &&
+      imagem.toString("ascii", 8, 12) === "WEBP";
+
+    if (
+      (tipo === "jpeg" && !jpeg) ||
+      (tipo === "png" && !png) ||
+      (tipo === "webp" && !webp)
+    ) {
+      erro("O conteúdo da imagem é inválido");
+    }
+
+    return valor;
+  }
+
+  // Compatibilidade com logos HTTPS antigas
+  try {
+    const url = new URL(valor);
+
+    if (
+      url.protocol === "https:" &&
+      valor.length <= 500
+    ) {
+      return valor;
+    }
+  } catch {}
+
+  erro("Escolha uma imagem válida do celular ou PC");
+}
+
+// VERIFICAR ADMINISTRADOR FIREBASE
+async function verificarAdmin(req) {
+  const authorization =
+    req.headers.authorization || "";
+
+  const match = authorization.match(
+    /^Bearer\s+(.+)$/i
+  );
+
+  if (!match) {
+    erro("Faça login no painel ADM", 401);
+  }
+
+  let usuario;
+
+  try {
+    usuario = await admin
+      .auth()
+      .verifyIdToken(match[1], true);
+  } catch {
+    erro("Login inválido ou expirado", 401);
+  }
+
+  if (usuario.uid !== ADMIN_UID) {
+    erro("Você não tem autorização ADM", 403);
+  }
+
+  const cadastro = await db
+    .collection("admins")
+    .doc(usuario.uid)
+    .get();
+
+  if (!cadastro.exists) {
+    erro("Administrador não cadastrado no Firebase", 403);
+  }
+
+  return usuario;
+}
+
+// MERCADO PAGO
+async function mercadoPago(caminho, opcoes = {}) {
+  if (!MP_TOKEN) {
+    erro("Mercado Pago não configurado", 503);
+  }
+
+  let resposta;
+
+  try {
+    resposta = await fetch(
+      "https://api.mercadopago.com" + caminho,
+      {
+        ...opcoes,
+        headers: {
+          Authorization: "Bearer " + MP_TOKEN,
+          "Content-Type": "application/json",
+          ...(opcoes.headers || {})
+        },
+        signal: AbortSignal.timeout(20000)
+      }
+    );
+  } catch {
+    erro("Não foi possível conectar ao Mercado Pago", 502);
+  }
+
+  let dados;
+
+  try {
+    dados = await resposta.json();
+  } catch {
+    erro("Resposta inválida do Mercado Pago", 502);
+  }
+
+  if (!resposta.ok) {
+    console.error(
+      "Mercado Pago:",
+      resposta.status,
+      dados.message
+    );
+
+    erro("Falha na comunicação com Mercado Pago", 502);
+  }
+
+  return dados;
+}
+
+// BUSCAR EQUIPES E CONFRONTOS
+async function listarCampeonato() {
+  const [equipesSnap, confrontosSnap] =
+    await Promise.all([
+      equipesRef
+        .where("status", "==", "confirmada")
+        .get(),
+      confrontosRef.get()
+    ]);
+
+  const equipes = equipesSnap.docs.map(doc => {
+    const d = doc.data();
+
+    return {
+      id: doc.id,
+      equipe: d.equipe,
+      logo: d.logo,
+      capitao: d.capitao || "",
+      slot: d.slot || null
+    };
   });
 
-  const d = await r.json();
+  equipes.sort(
+    (a, b) => (a.slot || 99) - (b.slot || 99)
+  );
 
-  if (!r.ok) {
-    console.error("Mercado Pago:", r.status, d.message);
-    fail("Erro na API de pagamentos", 502);
-  }
-
-  return d;
-}
-
-async function list() {
-  const [a, b] = await Promise.all([
-    teams.where("status", "==", "confirmada").get(),
-    matches.get()
-  ]);
-
-  const equipes = a.docs.map(d => ({
-    id: d.id,
-    equipe: d.get("equipe"),
-    logo: d.get("logo"),
-    slot: d.get("slot"),
-    capitao: d.get("capitao")
-  })).sort((x, y) => (x.slot || 99) - (y.slot || 99));
-
-  const confrontos = b.docs.map(d => d.data());
+  const confrontos = confrontosSnap.docs.map(
+    doc => doc.data()
+  );
 
   return { equipes, confrontos };
 }
 
-async function status(id) {
-  const ref = teams.doc(id);
-  const snap = await ref.get();
+// DISTRIBUIR SLOT DE FORMA SEGURA
+async function confirmarEquipe(id, manual = false) {
+  const ref = equipesRef.doc(id);
 
-  if (!snap.exists) fail("Inscrição não encontrada", 404);
-
-  const t = snap.data();
-  if (!t.pagamentoId) fail("Cobrança não encontrada", 404);
-
-  const p = await mp(
-    "/v1/payments/" + encodeURIComponent(t.pagamentoId)
-  );
-
-  const ok =
-    p.status === "approved" &&
-    p.payment_method_id === "pix" &&
-    p.currency_id === "BRL" &&
-    Number(p.transaction_amount) === PRICE &&
-    String(p.id) === t.pagamentoId &&
-    p.external_reference === id;
-
-  if (ok) {
-    await db.runTransaction(async tx => {
-      const [state, fresh] = await Promise.all([
-        tx.get(stateRef),
+  return db.runTransaction(async tx => {
+    const [configSnap, equipeSnap] =
+      await Promise.all([
+        tx.get(configRef),
         tx.get(ref)
       ]);
 
-      if (fresh.get("status") === "confirmada") return;
+    if (!equipeSnap.exists) {
+      erro("Equipe não encontrada", 404);
+    }
 
-      const slots = state.exists ? (state.get("slots") || {}) : {};
-      const used = new Set(Object.values(slots).map(Number));
+    const equipe = equipeSnap.data();
 
-      let slot = 1;
-      while (used.has(slot) && slot <= 24) slot++;
+    if (equipe.status === "confirmada") {
+      return {
+        confirmado: true,
+        slot: equipe.slot
+      };
+    }
 
-      if (slot > 24) {
-        tx.update(ref, { status: "pago_aguardando_vaga" });
-        return;
-      }
+    const slots = configSnap.exists
+      ? { ...(configSnap.get("slots") || {}) }
+      : {};
 
-      slots[id] = slot;
-      tx.set(stateRef, { slots }, { merge: true });
+    const usados = new Set(
+      Object.values(slots).map(Number)
+    );
 
+    let slot = 1;
+
+    while (
+      usados.has(slot) &&
+      slot <= TOTAL_VAGAS
+    ) {
+      slot++;
+    }
+
+    if (slot > TOTAL_VAGAS) {
       tx.update(ref, {
-        status: "confirmada",
-        slot,
-        confirmedAt: admin.firestore.FieldValue.serverTimestamp()
+        status: "pago_aguardando_vaga"
       });
+
+      return {
+        confirmado: false,
+        slot: null
+      };
+    }
+
+    slots[id] = slot;
+
+    tx.set(
+      configRef,
+      { slots },
+      { merge: true }
+    );
+
+    tx.update(ref, {
+      status: "confirmada",
+      slot,
+      manualApproval: manual,
+      confirmedAt:
+        admin.firestore.FieldValue.serverTimestamp()
     });
+
+    return {
+      confirmado: true,
+      slot
+    };
+  });
+}
+
+// VERIFICAR PAGAMENTO DIRETAMENTE NO MERCADO PAGO
+async function consultarPagamento(id) {
+  if (!validarId(id)) {
+    erro("ID da inscrição inválido");
   }
 
-  const latest = await ref.get();
+  const ref = equipesRef.doc(id);
+  const snap = await ref.get();
+
+  if (!snap.exists) {
+    erro("Inscrição não encontrada", 404);
+  }
+
+  const equipe = snap.data();
+
+  if (!equipe.pagamentoId) {
+    erro("Pagamento não encontrado", 404);
+  }
+
+  const pagamento = await mercadoPago(
+    "/v1/payments/" +
+    encodeURIComponent(equipe.pagamentoId)
+  );
+
+  const aprovado =
+    pagamento.status === "approved" &&
+    pagamento.payment_method_id === "pix" &&
+    pagamento.currency_id === "BRL" &&
+    Number(pagamento.transaction_amount) === PRECO &&
+    String(pagamento.id) ===
+      String(equipe.pagamentoId) &&
+    pagamento.external_reference === id;
+
+  if (aprovado &&
+      equipe.status !== "confirmada") {
+    await confirmarEquipe(id);
+  }
+
+  const atualizado = await ref.get();
+  const dados = atualizado.data();
 
   return {
     inscricao_id: id,
-    equipe: t.equipe,
-    valor: PRICE,
-    status: latest.get("status"),
-    pagamento_confirmado: ok,
-    slot: latest.get("slot") || null
+    equipe: dados.equipe,
+    valor: PRECO,
+    status: dados.status,
+    pagamento_confirmado: aprovado,
+    slot: dados.slot || null
   };
 }
 
-const server = http.createServer(async (req, res) => {
-  try {
-    const u = new URL(req.url, "http://localhost");
-
-    if (req.method === "OPTIONS") {
-      return reply(res, 204, {});
-    }
-
-    if (req.method === "GET" && u.pathname === "/") {
-      return reply(res, 200, {
-        status: "online",
-        campeonato: "DEMON SLAYER 4V4",
-        valor_inscricao: PRICE,
-        pix_configurado: !!MP
-      });
-    }
-
-    if (req.method === "GET" &&
-        u.pathname === "/api/campeonato") {
-      return reply(res, 200, await list());
-    }
-
-    // GERAR PIX
-    if (req.method === "POST" &&
-        u.pathname === "/api/pix/criar") {
-      const d = await body(req);
-
-      const equipe = str(d.equipe, 50);
-      const email = str(d.email, 120);
-      const capitao = str(d.capitao);
-      const whatsapp = str(d.whatsapp, 25);
-      const image = logo(d.logo);
-
-      const jogadores = [1, 2, 3, 4].map(i =>
-        str(d["jogador" + i])
+// SERVIDOR
+const server = http.createServer(
+  async (req, res) => {
+    try {
+      const url = new URL(
+        req.url,
+        "http://localhost"
       );
 
+      const rota = url.pathname;
+      const metodo = req.method;
+
+      if (metodo === "OPTIONS") {
+        return responder(res, 204, {});
+      }
+
+      // STATUS DO SERVIDOR
       if (
-        equipe.length < 2 ||
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
-        !capitao ||
-        !whatsapp ||
-        !image ||
-        jogadores.some(x => !x)
+        metodo === "GET" &&
+        rota === "/"
       ) {
-        fail("Preencha todos os campos corretamente");
+        return responder(res, 200, {
+          status: "online",
+          campeonato: "DEMON SLAYER 4V4",
+          valor_inscricao: PRECO,
+          vagas: TOTAL_VAGAS,
+          pix_configurado: Boolean(MP_TOKEN),
+          firebase_configurado: true,
+          upload_logo: true
+        });
       }
 
-      const currentState = await stateRef.get();
-
+      // CAMPEONATO PÚBLICO
       if (
-        Object.keys(currentState.get("slots") || {}).length >= 24
+        metodo === "GET" &&
+        rota === "/api/campeonato"
       ) {
-        fail("Todas as vagas estão ocupadas");
+        return responder(
+          res,
+          200,
+          await listarCampeonato()
+        );
       }
 
-      const pending = await teams
-        .where("equipeKey", "==", equipe.toLocaleLowerCase("pt-BR"))
-        .get();
+      // CRIAR PIX
+      if (
+        metodo === "POST" &&
+        rota === "/api/pix/criar"
+      ) {
+        const dados = await lerJSON(req);
 
-      if (pending.docs.some(x =>
-        ["confirmada", "pendente", "pago_aguardando_vaga"]
-          .includes(x.get("status"))
-      )) {
-        fail("Essa equipe já possui uma inscrição");
-      }
+        const equipe = texto(dados.equipe, 50);
+        const email = texto(dados.email, 120);
+        const capitao = texto(dados.capitao);
+        const whatsapp = texto(
+          dados.whatsapp,
+          25
+        );
 
-      const ref = teams.doc();
+        const logo = validarLogo(dados.logo);
 
-      await ref.set({
-        equipe,
-        equipeKey: equipe.toLocaleLowerCase("pt-BR"),
-        email,
-        capitao,
-        whatsapp,
-        logo: image,
-        jogadores,
-        status: "criando_pix",
-        createdAt: admin.firestore.FieldValue.serverTimestamp()
-      });
+        const jogadores = [
+          texto(dados.jogador1),
+          texto(dados.jogador2),
+          texto(dados.jogador3),
+          texto(dados.jogador4)
+        ];
 
-      try {
-        const payment = await mp("/v1/payments", {
-          method: "POST",
-          headers: {
-            "X-Idempotency-Key": ref.id
-          },
-          body: JSON.stringify({
-            transaction_amount: PRICE,
-            description: "Inscrição Campeonato 4V4 DEMON SLAYER",
-            payment_method_id: "pix",
-            external_reference: ref.id,
-            payer: { email }
-          })
-        });
-
-        await ref.update({
-          pagamentoId: String(payment.id),
-          status: "pendente"
-        });
-
-        const q = payment.point_of_interaction?.transaction_data || {};
-
-        return reply(res, 201, {
-          inscricao_id: ref.id,
-          pagamento_id: payment.id,
-          valor: PRICE,
-          qr_code: q.qr_code,
-          qr_code_base64: q.qr_code_base64,
-          ticket_url: q.ticket_url
-        });
-      } catch (e) {
-        await ref.update({ status: "erro_pix" });
-        throw e;
-      }
-    }
-
-    // VERIFICAR PAGAMENTO
-    if (req.method === "GET" &&
-        u.pathname === "/api/pix/status") {
-      const id = u.searchParams.get("inscricao_id");
-
-      if (!id || !/^[a-zA-Z0-9]{15,40}$/.test(id)) {
-        fail("ID inválido");
-      }
-
-      return reply(res, 200, await status(id));
-    }
-
-    // LISTAR INSCRIÇÕES PARA O ADM
-    if (req.method === "GET" &&
-        u.pathname === "/api/admin/campeonato") {
-      await authenticate(req);
-
-      const all = await teams.get();
-
-      return reply(res, 200, {
-        ...(await list()),
-        inscricoes: all.docs.map(d => ({
-          id: d.id,
-          ...d.data(),
-          pagamentoId: undefined,
-          email: undefined
-        })).sort((a, b) =>
-          (a.slot || 99) - (b.slot || 99)
-        )
-      });
-    }
-
-    // ADICIONAR EQUIPE MANUALMENTE
-    if (req.method === "POST" &&
-        u.pathname === "/api/admin/equipes") {
-      await authenticate(req);
-
-      const d = await body(req);
-      const equipe = str(d.equipe, 50);
-      const image = logo(d.logo);
-
-      if (!equipe || !image) {
-        fail("Equipe e logo HTTPS obrigatórias");
-      }
-
-      const ref = teams.doc();
-
-      await db.runTransaction(async tx => {
-        const state = await tx.get(stateRef);
-        const slots = state.exists ? (state.get("slots") || {}) : {};
-        const used = new Set(Object.values(slots).map(Number));
-
-        let slot = 1;
-        while (used.has(slot) && slot <= 24) slot++;
-
-        if (slot > 24) {
-          fail("Todas as vagas estão ocupadas");
+        if (
+          equipe.length < 2 ||
+          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+          !capitao ||
+          !whatsapp ||
+          jogadores.some(j => !j)
+        ) {
+          erro("Preencha todos os dados da equipe");
         }
 
-        slots[ref.id] = slot;
+        const configSnap = await configRef.get();
 
-        tx.set(stateRef, { slots }, { merge: true });
-        tx.set(ref, {
+        const slots = configSnap.exists
+          ? configSnap.get("slots") || {}
+          : {};
+
+        if (
+          Object.keys(slots).length >= TOTAL_VAGAS
+        ) {
+          erro("Todas as vagas estão ocupadas");
+        }
+
+        const chave = equipe.toLocaleLowerCase(
+          "pt-BR"
+        );
+
+        const duplicadas = await equipesRef
+          .where("equipeKey", "==", chave)
+          .get();
+
+        const existe = duplicadas.docs.some(
+          doc => [
+            "criando_pix",
+            "pendente",
+            "confirmada",
+            "pago_aguardando_vaga"
+          ].includes(doc.get("status"))
+        );
+
+        if (existe) {
+          erro("Essa equipe já está inscrita");
+        }
+
+        const ref = equipesRef.doc();
+
+        await ref.set({
           equipe,
-          equipeKey: equipe.toLocaleLowerCase("pt-BR"),
-          logo: image,
-          capitao: str(d.capitao),
-          whatsapp: str(d.whatsapp),
-          status: "confirmada",
-          slot,
-          manual: true,
-          createdAt: admin.firestore.FieldValue.serverTimestamp()
+          equipeKey: chave,
+          email,
+          capitao,
+          whatsapp,
+          logo,
+          jogadores,
+          status: "criando_pix",
+          createdAt:
+            admin.firestore.FieldValue.serverTimestamp()
         });
-      });
 
-      return reply(res, 201, { ok: true, id: ref.id });
-    }
+        try {
+          const pagamento = await mercadoPago(
+            "/v1/payments",
+            {
+              method: "POST",
+              headers: {
+                "X-Idempotency-Key": ref.id
+              },
+              body: JSON.stringify({
+                transaction_amount: PRECO,
+                description:
+                  "Campeonato 4V4 DEMON SLAYER",
+                payment_method_id: "pix",
+                external_reference: ref.id,
+                payer: { email }
+              })
+            }
+          );
 
-    // EXCLUIR EQUIPE
-    if (req.method === "POST" &&
-        u.pathname === "/api/admin/excluir") {
-      await authenticate(req);
+          await ref.update({
+            pagamentoId: String(pagamento.id),
+            status: "pendente"
+          });
 
-      const d = await body(req);
-      const id = str(d.id, 100);
+          const pix =
+            pagamento.point_of_interaction
+              ?.transaction_data || {};
 
-      if (!id) fail("ID obrigatório");
+          return responder(res, 201, {
+            inscricao_id: ref.id,
+            pagamento_id: pagamento.id,
+            equipe,
+            valor: PRECO,
+            status: "pendente",
+            qr_code: pix.qr_code || "",
+            qr_code_base64:
+              pix.qr_code_base64 || "",
+            ticket_url: pix.ticket_url || ""
+          });
 
-      const ref = teams.doc(id);
+        } catch (e) {
+          await ref.update({
+            status: "erro_pix"
+          });
 
-      await db.runTransaction(async tx => {
-        const [state, snap] = await Promise.all([
-          tx.get(stateRef),
-          tx.get(ref)
-        ]);
-
-        if (!snap.exists) {
-          fail("Equipe não encontrada", 404);
+          throw e;
         }
+      }
 
-        const slots = state.exists ? (state.get("slots") || {}) : {};
-        delete slots[id];
-
-        tx.set(stateRef, { slots }, { merge: true });
-        tx.delete(ref);
-      });
-
-      return reply(res, 200, { ok: true });
-    }
-
-    // CONFIRMAR MANUALMENTE
-    if (req.method === "POST" &&
-        u.pathname === "/api/admin/confirmar") {
-      await authenticate(req);
-
-      const d = await body(req);
-      const id = str(d.id, 100);
-      const ref = teams.doc(id);
-
-      await db.runTransaction(async tx => {
-        const [state, snap] = await Promise.all([
-          tx.get(stateRef),
-          tx.get(ref)
-        ]);
-
-        if (!snap.exists) {
-          fail("Equipe não encontrada", 404);
-        }
-
-        if (snap.get("status") === "confirmada") return;
-
-        const slots = state.exists ? (state.get("slots") || {}) : {};
-        const used = new Set(Object.values(slots).map(Number));
-
-        let slot = 1;
-        while (used.has(slot) && slot <= 24) slot++;
-
-        if (slot > 24) {
-          fail("Todas as vagas estão ocupadas");
-        }
-
-        slots[id] = slot;
-
-        tx.set(stateRef, { slots }, { merge: true });
-        tx.update(ref, {
-          slot,
-          status: "confirmada",
-          manualApproval: true,
-          confirmedAt: admin.firestore.FieldValue.serverTimestamp()
-        });
-      });
-
-      return reply(res, 200, { ok: true });
-    }
-
-    // GERENCIAR CONFRONTOS
-    if (req.method === "POST" &&
-        u.pathname === "/api/admin/confrontos") {
-      await authenticate(req);
-
-      const d = await body(req);
-
-      const phases = {
-        "Oitavas de final": 8,
-        "Quartas de final": 4,
-        "Semifinal": 2,
-        "Final": 1
-      };
-
+      // CONSULTAR PIX
       if (
-        !phases[d.fase] ||
-        !Number.isInteger(d.numero) ||
-        d.numero < 1 ||
-        d.numero > phases[d.fase]
+        metodo === "GET" &&
+        rota === "/api/pix/status"
       ) {
-        fail("Confronto inválido");
+        const id = url.searchParams.get(
+          "inscricao_id"
+        );
+
+        const resultado =
+          await consultarPagamento(id);
+
+        return responder(res, 200, resultado);
       }
 
-      const time1 = str(d.time1, 100);
-      const time2 = str(d.time2, 100);
-      const vencedor = str(d.vencedor, 100);
+      // PAINEL ADMINISTRATIVO
+      if (
+        metodo === "GET" &&
+        rota === "/api/admin/campeonato"
+      ) {
+        await verificarAdmin(req);
 
-      if (time1 && time1 === time2) {
-        fail("Escolha equipes diferentes");
+        const snap = await equipesRef.get();
+
+        const inscricoes = snap.docs.map(doc => {
+          const d = doc.data();
+
+          return {
+            id: doc.id,
+            equipe: d.equipe,
+            logo: d.logo,
+            capitao: d.capitao,
+            whatsapp: d.whatsapp,
+            jogadores: d.jogadores || [],
+            status: d.status,
+            slot: d.slot || null,
+            manual: Boolean(d.manual)
+          };
+        });
+
+        inscricoes.sort(
+          (a, b) =>
+            (a.slot || 99) -
+            (b.slot || 99)
+        );
+
+        return responder(res, 200, {
+          ...(await listarCampeonato()),
+          inscricoes
+        });
       }
 
-      if (vencedor && ![time1, time2].includes(vencedor)) {
-        fail("O vencedor deve participar do confronto");
-      }
+      // ADM: ADICIONAR EQUIPE MANUALMENTE
+      if (
+        metodo === "POST" &&
+        rota === "/api/admin/equipes"
+      ) {
+        await verificarAdmin(req);
 
-      for (const id of [time1, time2].filter(Boolean)) {
-        const s = await teams.doc(id).get();
+        const dados = await lerJSON(req);
 
-        if (!s.exists || s.get("status") !== "confirmada") {
-          fail("Equipe não confirmada");
+        const equipe = texto(dados.equipe, 50);
+        const logo = validarLogo(dados.logo);
+        const capitao = texto(dados.capitao);
+        const whatsapp = texto(
+          dados.whatsapp,
+          25
+        );
+
+        if (
+          !equipe ||
+          !capitao ||
+          !whatsapp
+        ) {
+          erro("Preencha os dados da equipe");
         }
+
+        const ref = equipesRef.doc();
+
+        await db.runTransaction(async tx => {
+          const configSnap =
+            await tx.get(configRef);
+
+          const slots = configSnap.exists
+            ? { ...(configSnap.get("slots") || {}) }
+            : {};
+
+          const usados = new Set(
+            Object.values(slots).map(Number)
+          );
+
+          let slot = 1;
+
+          while (
+            usados.has(slot) &&
+            slot <= TOTAL_VAGAS
+          ) {
+            slot++;
+          }
+
+          if (slot > TOTAL_VAGAS) {
+            erro("Todas as vagas estão ocupadas");
+          }
+
+          slots[ref.id] = slot;
+
+          tx.set(
+            configRef,
+            { slots },
+            { merge: true }
+          );
+
+          tx.set(ref, {
+            equipe,
+            equipeKey:
+              equipe.toLocaleLowerCase("pt-BR"),
+            logo,
+            capitao,
+            whatsapp,
+            slot,
+            status: "confirmada",
+            manual: true,
+            createdAt:
+              admin.firestore.FieldValue.serverTimestamp()
+          });
+        });
+
+        return responder(res, 201, {
+          ok: true,
+          id: ref.id
+        });
       }
 
-      const data = {
-        fase: d.fase,
-        numero: d.numero,
-        time1,
-        time2,
-        vencedor
-      };
+      // ADM: CONFIRMAR EQUIPE MANUALMENTE
+      if (
+        metodo === "POST" &&
+        rota === "/api/admin/confirmar"
+      ) {
+        await verificarAdmin(req);
 
-      await matches.doc(d.fase + "_" + d.numero).set(data);
+        const dados = await lerJSON(req);
+        const id = texto(dados.id, 100);
 
-      return reply(res, 200, { ok: true });
+        if (!validarId(id)) {
+          erro("ID da equipe inválido");
+        }
+
+        const resultado =
+          await confirmarEquipe(id, true);
+
+        return responder(res, 200, {
+          ok: true,
+          ...resultado
+        });
+      }
+
+      // ADM: EXCLUIR EQUIPE
+      if (
+        metodo === "POST" &&
+        rota === "/api/admin/excluir"
+      ) {
+        await verificarAdmin(req);
+
+        const dados = await lerJSON(req);
+        const id = texto(dados.id, 100);
+
+        if (!validarId(id)) {
+          erro("ID inválido");
+        }
+
+        const ref = equipesRef.doc(id);
+
+        await db.runTransaction(async tx => {
+          const [configSnap, equipeSnap] =
+            await Promise.all([
+              tx.get(configRef),
+              tx.get(ref)
+            ]);
+
+          if (!equipeSnap.exists) {
+            erro("Equipe não encontrada", 404);
+          }
+
+          const slots = configSnap.exists
+            ? { ...(configSnap.get("slots") || {}) }
+            : {};
+
+          delete slots[id];
+
+          // Substitui o mapa inteiro para remover
+          // corretamente a vaga da equipe excluída.
+          tx.set(configRef, { slots });
+
+          tx.delete(ref);
+        });
+
+        return responder(res, 200, {
+          ok: true
+        });
+      }
+
+      // ADM: EDITAR CONFRONTOS
+      if (
+        metodo === "POST" &&
+        rota === "/api/admin/confrontos"
+      ) {
+        await verificarAdmin(req);
+
+        const dados = await lerJSON(req);
+
+        const fase = texto(dados.fase, 50);
+        const numero = dados.numero;
+
+        const time1 = texto(dados.time1, 100);
+        const time2 = texto(dados.time2, 100);
+        const vencedor = texto(
+          dados.vencedor,
+          100
+        );
+
+        if (
+          !FASES[fase] ||
+          !Number.isInteger(numero) ||
+          numero < 1 ||
+          numero > FASES[fase]
+        ) {
+          erro("Confronto inválido");
+        }
+
+        if (
+          time1 &&
+          time2 &&
+          time1 === time2
+        ) {
+          erro("Escolha equipes diferentes");
+        }
+
+        if (
+          vencedor &&
+          ![time1, time2].includes(vencedor)
+        ) {
+          erro(
+            "O vencedor precisa participar do confronto"
+          );
+        }
+
+        for (const id of [
+          time1,
+          time2
+        ].filter(Boolean)) {
+          if (!validarId(id)) {
+            erro("ID de equipe inválido");
+          }
+
+          const snap = await equipesRef
+            .doc(id)
+            .get();
+
+          if (
+            !snap.exists ||
+            snap.get("status") !== "confirmada"
+          ) {
+            erro("Equipe não confirmada");
+          }
+        }
+
+        const confronto = {
+          fase,
+          numero,
+          time1,
+          time2,
+          vencedor
+        };
+
+        await confrontosRef
+          .doc(fase + "_" + numero)
+          .set(confronto);
+
+        return responder(res, 200, {
+          ok: true
+        });
+      }
+
+      return responder(res, 404, {
+        erro: "Rota não encontrada"
+      });
+
+    } catch (e) {
+      console.error(
+        "Erro no servidor:",
+        e.message
+      );
+
+      return responder(
+        res,
+        e.status || 500,
+        {
+          erro: e.status
+            ? e.message
+            : "Erro interno no servidor"
+        }
+      );
     }
-
-    return reply(res, 404, {
-      erro: "Rota não encontrada"
-    });
-
-  } catch (e) {
-    console.error(e.message);
-
-    return reply(res, e.status || 500, {
-      erro: e.status ? e.message : "Erro interno no servidor"
-    });
   }
-});
+);
 
 server.listen(PORT, "0.0.0.0", () => {
   console.log(
-    "Campeonato DEMON SLAYER online na porta " + PORT
+    "Servidor DEMON SLAYER 4V4 online na porta " +
+    PORT
   );
 });
-
