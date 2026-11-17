@@ -86,6 +86,29 @@ header nav a{background:#30111c;padding:10px 13px;border-radius:9px;font-size:13
 .status-pill{display:inline-block;padding:5px 9px;border-radius:20px;background:#552135;color:#ffe1e8;font-size:12px;font-weight:700;margin:8px 0}.status-pill.ok{background:#164a35;color:#baf6d5}
 .admin-help{color:#d6b6bf;line-height:1.6;font-size:14px}.admin-summary>div{line-height:1.6}
 @media(max-width:650px){main{padding:20px 12px}.hero{padding:30px 18px}header{position:static;padding:15px}.admin-toolbar{display:grid}.admin-toolbar input,.admin-toolbar select{width:100%}#admin{padding:12px}.admin-entry-actions button{flex:1}}
+
+/* Central do campeonato */
+.arena{position:relative;overflow:hidden;margin:26px 0;padding:24px;border:1px solid #a32943;border-radius:20px;background:radial-gradient(circle at 90% 0%,#63182d 0%,transparent 45%),linear-gradient(135deg,#220912,#0c070b);box-shadow:0 15px 40px #0008}
+.arena:before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,transparent,#ff3158,transparent)}
+.arena-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.arena-tag{font-size:12px;letter-spacing:2px;color:#ff7d91;font-weight:800}
+.arena-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:18px 0}
+.arena-tile{background:#0b070bbd;border:1px solid #703044;border-radius:12px;padding:16px}
+.arena-tile strong{display:block;font-size:26px;color:white;margin:5px 0}
+.arena-tile small{font-size:12px}
+.progress-track{height:11px;border-radius:99px;background:#4b202c;overflow:hidden;margin-top:10px}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,#d31e43,#ff7891);transition:width .4s}
+.arena-highlight{margin-top:16px;border:1px solid #8c3b4f;background:#170a11;border-radius:12px;padding:15px}
+.phase-filter{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.phase-filter button{background:#29101b;border:1px solid #6e2a40;padding:10px 13px}
+.phase-filter button.active{background:#bb2144;border-color:#ff657e}
+.phase[data-inactive="true"]{display:none}
+.match.winner-set{border-color:#be4861}
+.match .winner-line{background:#36111f;border-radius:7px;color:#fff}
+@media(max-width:600px){.arena{padding:16px}.arena-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.arena-tile{padding:12px}}
+
+/* Classificação competitiva */
+.rank-wrap{overflow-x:auto}.rank-table{width:100%;border-collapse:collapse;min-width:440px}.rank-table th,.rank-table td{padding:11px 8px;border-bottom:1px solid #542134;text-align:left;font-size:13px}.rank-table th{color:#ffa1b0}.rank-table td:not(:nth-child(2)),.rank-table th:not(:nth-child(2)){text-align:center}.rank-table .qualified{background:#10312466}.rank-table .wildcard{background:#44320d66}.rank-table .team-name{text-align:left;font-weight:bold}.rank-note{font-size:12px;color:#d8bbc4;margin:8px 0}.group-results{margin:9px 0 20px}.group-results h3{color:#ff667d}.group-admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}.group-admin-grid select{margin:5px 0}.status-pill{font-size:11px;color:#9af0b6}.rules-card{border-left:4px solid #ff3858}.match-score{font-weight:800;color:#ff8496}
 </style>
 </head>
 <body>
@@ -115,8 +138,15 @@ header nav a{background:#30111c;padding:10px 13px;border-radius:9px;font-size:13
 🔐 O preço é definido pelo servidor. A equipe aparece nos grupos apenas após a confirmação do pagamento pelo Mercado Pago ou inclusão manual autorizada pelo administrador.
 </div>
 
+<section class="arena" aria-label="Central do campeonato">
+<div class="arena-top"><div><div class="arena-tag">⚡ CENTRAL DO CAMPEONATO</div><h2 style="margin:8px 0 0">Rumo ao título 4V4</h2></div><span id="arenaSituation" class="red">Aguardando equipes</span></div>
+<div class="arena-grid"><div class="arena-tile"><small>Equipes confirmadas</small><strong id="arenaTeams">0/24</strong></div><div class="arena-tile"><small>Vagas restantes</small><strong id="arenaSlots">24</strong></div><div class="arena-tile"><small>Confrontos concluídos</small><strong id="arenaMatches">0/15</strong></div><div class="arena-tile"><small>Fase em destaque</small><strong id="arenaPhase" style="font-size:19px">Grupos</strong></div></div>
+<small>Ocupação das vagas</small><div class="progress-track" role="progressbar" aria-label="Ocupação das vagas" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0" id="arenaProgressTrack"><div class="progress-fill" id="arenaProgress"></div></div>
+<div class="arena-highlight" id="arenaHighlight" aria-live="polite">🏆 O grande campeão será anunciado aqui quando a final tiver um vencedor.</div>
+</section>
+<section class="card rules-card"><h2>⚔️ REGULAMENTO COMPETITIVO</h2><p>24 equipes • 6 grupos de 4 • 3 partidas MD1 por equipe. Vitória = 3 pontos; empate = 1 ponto (se permitido); derrota = 0. Passam os 2 primeiros de cada grupo e os 4 melhores terceiros. Oitavas, quartas e semifinal MD1; final MD3 (2 vitórias).</p><small>Desempates provisórios: pontos, vitórias, saldo de rounds e rounds a favor. A organização deve confirmar os critérios oficiais antes do início.</small></section>
 <h2>🏆 Grupos do campeonato</h2>
-<div class="groups" id="groups"></div>
+<div class="groups" id="groups"></div><section class="card"><h2>🔥 Disputa pelas 4 vagas de melhores terceiros</h2><div id="thirdRanking" class="rank-wrap"></div><p class="rank-note">As quatro melhores terceiras colocadas avançam junto com as duas melhores de cada grupo.</p></section>
 
 <section class="card" id="inscricao">
 <h2>📝 Inscrição no campeonato</h2>
@@ -191,7 +221,7 @@ header nav a{background:#30111c;padding:10px 13px;border-radius:9px;font-size:13
 <section class="phase">
 <h2>⚔️ Chaveamento eliminatório</h2>
 <p class="muted">O administrador define os confrontos e os vencedores. A classificação para as oitavas deve seguir o regulamento do campeonato.</p>
-<div id="brackets"></div>
+<div class="phase-filter" id="publicPhaseFilter" aria-label="Filtrar confrontos"><button type="button" class="active" data-public-phase="todas">Todas</button><button type="button" data-public-phase="Oitavas de final">Oitavas</button><button type="button" data-public-phase="Quartas de final">Quartas</button><button type="button" data-public-phase="Semifinal">Semifinal</button><button type="button" data-public-phase="Final">Final</button></div><div id="brackets"></div>
 </section>
 
 <section id="admin" class="card">
@@ -249,11 +279,12 @@ header nav a{background:#30111c;padding:10px 13px;border-radius:9px;font-size:13
 </div>
 </div>
 <div class="admin-view" data-admin-view="confrontos">
+<div class="admin-panel"><h3>🎯 Resultados da fase de grupos (MD1)</h3><p class="muted">Registre os resultados das 3 partidas de cada equipe. Os dados precisam ser salvos no servidor para aparecerem para todos.</p><div id="adminGroupResults"></div></div>
 <div class="admin-panel">
 <h3>⚔️ Editar confrontos e vencedores</h3>
 <p class="admin-help">Escolha duas equipes e, quando houver resultado, selecione a vencedora. Salve cada confronto individualmente.</p>
 <label for="adminFase">Fase do campeonato</label><select id="adminFase"><option value="todas">Todas as fases</option><option value="Oitavas de final">Oitavas de final</option><option value="Quartas de final">Quartas de final</option><option value="Semifinal">Semifinal</option><option value="Final">Final</option></select>
-<div id="adminMatches"></div>
+<p class="rank-note">A final é MD3: para anunciar o campeão, o servidor deve salvar 2 vitórias do vencedor em <code>vitoriasVencedor</code>. O registro de vencedor isolado não encerra a final.</p><div id="adminMatches"></div>
 </div>
 </div>
 </div>
@@ -285,6 +316,7 @@ const $ = id => document.getElementById(id);
 let teams = [];
 let matches = [];
 let inscricoes = [];
+let resultadosGrupos = [];
 let inscricaoId = "";
 let logoInscricao = "";
 let logoAdmin = "";
@@ -328,25 +360,114 @@ function equipeElemento(team) {
   return wrap;
 }
 
+let fasePublica = "todas";
+$("publicPhaseFilter").addEventListener("click", e => {
+  const b = e.target.closest("button[data-public-phase]");
+  if (!b) return;
+  fasePublica = b.dataset.publicPhase;
+  document.querySelectorAll("#publicPhaseFilter button").forEach(x => x.classList.toggle("active",x === b));
+  document.querySelectorAll("#brackets .phase").forEach(x => x.dataset.inactive = String(fasePublica !== "todas" && x.dataset.fase !== fasePublica));
+});
+function renderArena(){
+  const total = teams.length;
+  const concluded = matches.filter(m => m.vencedor && [m.time1,m.time2].includes(m.vencedor)).length;
+  $("arenaTeams").textContent = total + "/24";
+  $("arenaSlots").textContent = Math.max(0,24-total);
+  $("arenaMatches").textContent = concluded + "/15";
+  $("arenaProgress").style.width = Math.min(100,total/24*100) + "%";
+  $("arenaProgressTrack").setAttribute("aria-valuenow",Math.min(24,total));
+  const final = matches.find(m=>m.fase === "Final" && m.vencedor && [m.time1,m.time2].includes(m.vencedor));
+  const champion = final && Number(final.vitoriasVencedor)>=2 && teams.find(t=>t.id === final.vencedor);
+  const active = ["Final","Semifinal","Quartas de final","Oitavas de final"].find(f=>matches.some(m=>m.fase===f && (m.time1 || m.time2)));
+  $("arenaPhase").textContent = champion ? "Encerrado" : (active || "Grupos");
+  $("arenaSituation").textContent = champion ? "🏆 Campeão definido" : total >= 24 ? "🔥 Vagas preenchidas" : "⚔️ Inscrições abertas";
+  $("arenaHighlight").textContent = champion ? "🏆 CAMPEÃO DO 4V4: " + champion.equipe : "🏆 O campeão será anunciado após conquistar 2 vitórias na final MD3.";
+}
+// O backend deve fornecer resultadosGrupos [{id,grupo,time1,time2,placar1,placar2}].
+// Cada grupo de 4 tem 6 partidas, total de 36 jogos na fase de grupos.
+function rankCompare(a,b){return b.pts-a.pts || b.v-a.v || b.saldo-a.saldo || b.rf-a.rf || String(a.team?.equipe||"").localeCompare(String(b.team?.equipe||""),"pt-BR");}
+function getGroupRanks(){
+  return Array.from({length:6},(_,g)=>{
+    const list=Array.from({length:4},(_,j)=>{
+      const team=teams.find(t=>Number(t.slot)===g*4+j+1);
+      return {team,pts:0,j:0,v:0,e:0,d:0,rf:0,rc:0,saldo:0};
+    });
+    const byId=new Map(list.filter(x=>x.team).map(x=>[String(x.team.id),x]));
+    for(const m of resultadosGrupos){
+      const a=byId.get(String(m.time1)),b=byId.get(String(m.time2));
+      const x=Number(m.placar1),y=Number(m.placar2);
+      if(!a||!b||!Number.isInteger(x)||!Number.isInteger(y)||x<0||y<0||x>99||y>99)continue;
+      a.j++;b.j++;a.rf+=x;a.rc+=y;b.rf+=y;b.rc+=x;
+      if(x>y){a.v++;a.pts+=3;b.d++;}else if(y>x){b.v++;b.pts+=3;a.d++;}else{a.e++;b.e++;a.pts++;b.pts++;}
+    }
+    list.forEach(x=>x.saldo=x.rf-x.rc);
+    list.sort(rankCompare);
+    return list.map((x,i)=>({...x,position:i+1}));
+  });
+}
+function makeRankTable(rows,group){
+  const wrap=node("div",undefined,"rank-wrap");const t=node("table",undefined,"rank-table");
+  const thead=node("thead"),tr=node("tr");
+  for(const h of ["#","EQUIPE","J","V","E","D","SG","PTS"]){tr.append(node("th",h));}
+  thead.append(tr);t.append(thead);
+  const tbody=node("tbody");
+  rows.forEach((r,i)=>{
+    const tr=node("tr");
+    if(group&&r.position<=2)tr.className="qualified";
+    if(!group&&r.wildcard)tr.className="wildcard";
+    for(const v of [String(r.position||i+1),r.team?.equipe||"Aguardando equipe",r.j,r.v,r.e,r.d,r.saldo,r.pts]){
+      const td=node("td",String(v));if(typeof v==="string"&&v===(r.team?.equipe||"Aguardando equipe"))td.className="team-name";tr.append(td);
+    }tbody.append(tr);
+  });t.append(tbody);wrap.append(t);return wrap;
+}
+function renderGroupAdmin(){
+  const root=$("adminGroupResults");if(!root)return;root.replaceChildren();
+  for(let g=0;g<6;g++){
+    const groupTeams=teams.filter(t=>Number(t.slot)>=g*4+1&&Number(t.slot)<=g*4+4).sort((a,b)=>a.slot-b.slot);
+    const box=node("div",undefined,"admin-entry");box.append(node("h4","Grupo "+String.fromCharCode(65+g)+" — "+groupTeams.length+"/4 equipes"));
+    if(groupTeams.length<2){box.append(node("p","Aguardando equipes para registrar partidas.","admin-empty"));root.append(box);continue;}
+    for(let i=0;i<groupTeams.length;i++)for(let j=i+1;j<groupTeams.length;j++){
+      const a=groupTeams[i],b=groupTeams[j];
+      const existing=resultadosGrupos.find(m=>(String(m.time1)===String(a.id)&&String(m.time2)===String(b.id))||(String(m.time1)===String(b.id)&&String(m.time2)===String(a.id)));
+      const line=node("div",undefined,"match");line.append(node("strong",a.equipe+" × "+b.equipe));
+      const grid=node("div",undefined,"group-admin-grid");const inputs=[];
+      for(const [team,id] of [[a,"placar1"],[b,"placar2"]]){
+        const label=node("label",team.equipe);const input=node("input");input.type="number";input.min="0";input.max="99";input.step="1";input.placeholder="Rounds";
+        const old=existing?(String(existing.time1)===String(a.id)?existing[id]:existing[id==="placar1"?"placar2":"placar1"]):null;
+        if(old!==null&&old!==undefined)input.value=old;
+        label.append(input);grid.append(label);inputs.push(input);
+      }
+      line.append(grid);const save=node("button","Salvar resultado MD1");save.type="button";
+      save.onclick=async()=>{
+        const [x,y]=inputs.map(inp=>Number(inp.value));
+        if(inputs.some(inp=>inp.value.trim()==="")||![x,y].every(n=>Number.isInteger(n)&&n>=0&&n<=99)){alert("Informe dois placares válidos (0 a 99).");return;}
+        if(!confirm("Salvar resultado de "+a.equipe+" × "+b.equipe+"?"))return;
+        save.disabled=true;
+        try{
+          await adminRequest("/api/admin/grupos/resultado",{method:"POST",body:JSON.stringify({grupo:String.fromCharCode(65+g),time1:a.id,time2:b.id,placar1:x,placar2:y})});
+          await adminRefresh();
+        }catch(err){$("adminMsg").textContent="Não foi possível salvar o resultado: "+err.message+". O servidor precisa implementar /api/admin/grupos/resultado.";}
+        finally{save.disabled=false;}
+      };line.append(save);box.append(line);
+    }root.append(box);
+  }
+}
 function render() {
+  renderArena();
   const groups = $("groups");
   groups.replaceChildren();
 
+  const ranks = getGroupRanks();
   for (let i = 0; i < 6; i++) {
     const sec = node("section", undefined, "card");
-    sec.append(node("h2", "Grupo " + String.fromCharCode(65 + i)));
-
-    for (let j = 0; j < 4; j++) {
-      const slot = i * 4 + j + 1;
-      const team = teams.find(t => t.slot === slot);
-      const line = equipeElemento(team);
-
-      line.prepend(node("small", "Slot " + slot + " — "));
-      sec.append(line);
-    }
-
+    sec.append(node("h2", "Grupo " + String.fromCharCode(65 + i) + " • MD1"));
+    sec.append(makeRankTable(ranks[i], true));
     groups.append(sec);
   }
+  const third = ranks.map(r => r[2]).filter(x=>x && x.team);
+  third.sort(rankCompare);
+  const thirdRoot = $("thirdRanking");
+  thirdRoot.replaceChildren(makeRankTable(third.map((x,i)=>({...x, position:i+1, wildcard:i<4})),false));
 
   const phases = [
     ["Oitavas de final", 8],
@@ -360,6 +481,8 @@ function render() {
 
   for (const [fase, total] of phases) {
     const sec = node("section", undefined, "phase");
+    sec.dataset.fase = fase;
+    sec.dataset.inactive = String(fasePublica !== "todas" && fasePublica !== fase);
     sec.append(node("h2", fase));
 
     const grid = node("div", undefined, "brackets");
@@ -370,6 +493,7 @@ function render() {
       );
 
       const card = node("div", undefined, "match");
+      if(match?.vencedor) card.classList.add("winner-set");
       card.append(node("strong", "Confronto " + (i + 1)));
 
       for (const id of [match?.time1, match?.time2]) {
@@ -377,7 +501,8 @@ function render() {
         const line = equipeElemento(t);
 
         if (t && match?.vencedor === t.id) {
-          line.append(node("strong", " 🏆"));
+          line.classList.add("winner-line");
+          line.append(node("strong", " 🏆 Vencedor"));
         }
 
         card.append(line);
@@ -417,6 +542,7 @@ async function carregar() {
     const data = await request("/api/campeonato");
     teams = data.equipes || [];
     matches = data.confrontos || [];
+    resultadosGrupos = data.resultadosGrupos || [];
     render();
   } catch (e) {
     $("formMsg").textContent =
@@ -632,6 +758,7 @@ async function adminRefresh() {
 
   teams = data.equipes || [];
   matches = data.confrontos || [];
+  resultadosGrupos = data.resultadosGrupos || [];
   inscricoes = data.inscricoes || [];
 
   $("adminArea").classList.remove("hidden");
@@ -717,6 +844,7 @@ $("manual").onsubmit = async e => {
 
 // Equipes e confrontos do painel ADM
 function renderAdmin() {
+  renderGroupAdmin();
   const root = $("adminTeams");
   root.replaceChildren();
 
