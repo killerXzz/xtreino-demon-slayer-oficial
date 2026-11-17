@@ -70,6 +70,22 @@ small{color:#d4b2bc}
 #admin .admin-summary strong{display:block;font-size:24px;color:#ff6579}
 #admin .admin-empty{color:#c6a4ae;font-size:14px}
 @media(max-width:600px){#admin{padding:14px}#admin .admin-panel{padding:12px}}
+
+/* Personalização 4V4: altere imagens/campeonato-bg.jpg pela sua arte */
+:root{--red:#ee294b;--panel:#180a10;--line:#743043}
+html{scroll-behavior:smooth}body{background:linear-gradient(#090508dd,#090508f2),url('./imagens/campeonato-bg.jpg') center top/cover fixed,#0a0508}
+header{position:sticky;top:0;z-index:10;backdrop-filter:blur(12px);background:#13070beF}
+header nav a{background:#30111c;padding:10px 13px;border-radius:9px;font-size:13px}
+.hero{padding:45px 28px;border:1px solid #8c2944;border-radius:20px;background:linear-gradient(100deg,#12060de8,#370b1db8),url('./imagens/banner-4v4.jpg') center/cover;box-shadow:0 16px 50px #0009}
+.hero .intro{max-width:680px}.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}.hero-actions a{background:#b51c3b;padding:13px 18px;border-radius:10px;font-weight:700}
+.card,.admin-panel{backdrop-filter:blur(5px)}.card{background:#1e0b13ed}
+.admin-tabs{display:flex;gap:9px;overflow-x:auto;padding:5px 0 12px;margin-top:15px}.admin-tab{white-space:nowrap;background:#34111f!important;border:1px solid #753246!important}.admin-tab.active{background:#b51b3b!important;border-color:#ff6579!important}
+.admin-view{display:none}.admin-view.active{display:block}
+.admin-toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:10px 0 16px}.admin-toolbar input,.admin-toolbar select{margin:0;flex:1;min-width:160px}
+.admin-entry{transition:border-color .2s}.admin-entry:hover{border-color:#ed4965!important}.admin-entry-actions button{flex:0 1 auto}
+.status-pill{display:inline-block;padding:5px 9px;border-radius:20px;background:#552135;color:#ffe1e8;font-size:12px;font-weight:700;margin:8px 0}.status-pill.ok{background:#164a35;color:#baf6d5}
+.admin-help{color:#d6b6bf;line-height:1.6;font-size:14px}.admin-summary>div{line-height:1.6}
+@media(max-width:650px){main{padding:20px 12px}.hero{padding:30px 18px}header{position:static;padding:15px}.admin-toolbar{display:grid}.admin-toolbar input,.admin-toolbar select{width:100%}#admin{padding:12px}.admin-entry-actions button{flex:1}}
 </style>
 </head>
 <body>
@@ -82,9 +98,12 @@ small{color:#d4b2bc}
 </header>
 
 <main>
+<section class="hero" id="inicio">
 <div class="red">FREE FIRE • CAMPEONATO OFICIAL</div>
 <h1>CAMPEONATO <span class="red">4V4</span></h1>
-<p class="intro">Inscreva sua equipe por Pix e acompanhe grupos, oitavas, quartas, semifinal e final.</p>
+<p class="intro">Inscreva sua equipe por Pix e acompanhe os 6 grupos e todas as fases eliminatórias.</p>
+<div class="hero-actions"><a href="#inscricao">📝 Inscrever equipe</a><a href="#groups">🏆 Ver grupos</a><a href="#brackets">⚔️ Ver confrontos</a></div>
+</section>
 
 <div class="stats">
 <div class="card stat"><strong>24</strong>Vagas totais</div>
@@ -192,15 +211,30 @@ small{color:#d4b2bc}
 </div>
 <p id="adminMsg" class="msg" role="status"></p>
 <div id="adminArea" class="hidden">
+<nav class="admin-tabs" aria-label="Seções do painel administrativo">
+<button type="button" class="admin-tab active" data-admin-tab="resumo">📊 Visão geral</button>
+<button type="button" class="admin-tab" data-admin-tab="inscricoes">📋 Inscrições</button>
+<button type="button" class="admin-tab" data-admin-tab="adicionar">➕ Adicionar equipe</button>
+<button type="button" class="admin-tab" data-admin-tab="confrontos">⚔️ Confrontos</button>
+</nav>
+<div class="admin-view active" data-admin-view="resumo">
+<h3>📊 Resumo do campeonato</h3>
+<p class="admin-help">Use as abas acima para confirmar inscrições, cadastrar equipes ou definir confrontos. Pagamentos Pix são verificados pelo servidor.</p>
 <div class="admin-summary">
 <div><strong id="admConfirmadas">0</strong>Equipes confirmadas</div>
 <div><strong id="admPendentes">0</strong>Inscrições pendentes</div>
 <div><strong id="admVagas">24</strong>Vagas disponíveis</div>
 </div>
+</div>
+<div class="admin-view" data-admin-view="inscricoes">
 <div class="admin-panel">
 <h3>📋 Gerenciar inscrições</h3>
+<p class="admin-help">Confira o status antes de confirmar manualmente. A confirmação manual pode liberar uma equipe sem pagamento.</p>
+<div class="admin-toolbar"><input id="adminBusca" type="search" placeholder="🔎 Buscar equipe ou capitão" aria-label="Buscar equipe"><select id="adminFiltro" aria-label="Filtrar inscrições"><option value="todas">Todas as inscrições</option><option value="pendentes">Pendentes</option><option value="confirmadas">Confirmadas</option></select></div>
 <div id="adminTeams"></div>
 </div>
+</div>
+<div class="admin-view" data-admin-view="adicionar">
 <div class="admin-panel">
 <h3>➕ Adicionar equipe manualmente</h3>
 <form id="manual">
@@ -213,9 +247,14 @@ small{color:#d4b2bc}
 <button type="submit">Adicionar equipe</button>
 </form>
 </div>
+</div>
+<div class="admin-view" data-admin-view="confrontos">
 <div class="admin-panel">
 <h3>⚔️ Editar confrontos e vencedores</h3>
+<p class="admin-help">Escolha duas equipes e, quando houver resultado, selecione a vencedora. Salve cada confronto individualmente.</p>
+<label for="adminFase">Fase do campeonato</label><select id="adminFase"><option value="todas">Todas as fases</option><option value="Oitavas de final">Oitavas de final</option><option value="Quartas de final">Quartas de final</option><option value="Semifinal">Semifinal</option><option value="Final">Final</option></select>
 <div id="adminMatches"></div>
+</div>
 </div>
 </div>
 </section>
@@ -687,7 +726,16 @@ function renderAdmin() {
   $("admVagas").textContent = Math.max(0, 24 - confirmadas);
   if (!inscricoes.length) root.append(node("p", "Nenhuma inscrição cadastrada.", "admin-empty"));
 
-  inscricoes.forEach(t => {
+  const busca = ($("adminBusca")?.value || "").trim().toLocaleLowerCase("pt-BR");
+  const filtro = $("adminFiltro")?.value || "todas";
+  const filtradas = inscricoes.filter(t => {
+    const confirmado = t.status === "confirmada" || t.status === "pago";
+    if (filtro === "confirmadas" && !confirmado) return false;
+    if (filtro === "pendentes" && confirmado) return false;
+    return [t.equipe, t.capitao, t.whatsapp].some(v => String(v || "").toLocaleLowerCase("pt-BR").includes(busca));
+  });
+  if (inscricoes.length && !filtradas.length) root.append(node("p", "Nenhuma inscrição encontrada para esse filtro.", "admin-empty"));
+  filtradas.forEach(t => {
     const card = node("div", undefined, "admin-entry");
     const row = equipeElemento(t);
     card.append(row);
@@ -700,6 +748,8 @@ function renderAdmin() {
     ].filter(Boolean).join("\n");
     details.style.whiteSpace = "pre-line";
     card.append(details);
+    const pill = node("span", t.status === "confirmada" || t.status === "pago" ? "✓ Confirmada / paga" : "⏳ Pendente", "status-pill" + (t.status === "confirmada" || t.status === "pago" ? " ok" : ""));
+    card.append(pill);
     const actions = node("div", undefined, "admin-entry-actions");
 
     if (t.status !== "confirmada") {
@@ -761,6 +811,7 @@ function renderAdmin() {
   ];
 
   for (const [fase, total] of fases) {
+    if ($("adminFase")?.value !== "todas" && $("adminFase")?.value !== fase) continue;
     area.append(node("h3", fase));
 
     for (let n = 1; n <= total; n++) {
@@ -794,6 +845,8 @@ function renderAdmin() {
 
       btn.onclick = async () => {
         try {
+          if (selects[0].value && selects[0].value === selects[1].value) throw Error("Escolha equipes diferentes.");
+          if (selects[2].value && ![selects[0].value, selects[1].value].includes(selects[2].value)) throw Error("O vencedor precisa ser uma das equipes do confronto.");
           await adminRequest("/api/admin/confrontos", {
             method: "POST",
             body: JSON.stringify({
@@ -816,6 +869,15 @@ function renderAdmin() {
     }
   }
 }
+
+// Navegação e filtros do painel administrativo (sem alterar a API).
+document.querySelectorAll(".admin-tab").forEach(btn => btn.addEventListener("click", () => {
+  document.querySelectorAll(".admin-tab").forEach(el => el.classList.toggle("active", el === btn));
+  document.querySelectorAll(".admin-view").forEach(el => el.classList.toggle("active", el.dataset.adminView === btn.dataset.adminTab));
+}));
+$("adminBusca").addEventListener("input", renderAdmin);
+$("adminFiltro").addEventListener("change", renderAdmin);
+$("adminFase").addEventListener("change", renderAdmin);
 
 // Atualização automática
 setInterval(() => {
