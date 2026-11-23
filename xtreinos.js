@@ -36,13 +36,11 @@ const COLORS = {
 
 const days = {
   segunda: 'Segunda-feira',
-  terca: 'Terça-feira',
   quarta: 'Quarta-feira'
 };
 
 const weekdays = {
   segunda: 1,
-  terca: 2,
   quarta: 3
 };
 
@@ -120,8 +118,8 @@ function shownMatches() {
       : currentMatches();
 
   const filtered = selectedMode === 'mensal'
-    ? base.filter(m => String(m.date || '').slice(0, 7) === monthKey())
-    : base.filter(m => selectedDay === 'geral' || m.day === selectedDay);
+    ? base.filter(m => m.day !== 'terca' && String(m.date || '').slice(0, 7) === monthKey())
+    : base.filter(m => m.day !== 'terca' && (selectedDay === 'geral' || m.day === selectedDay));
 
   return filtered.sort((a, b) =>
     String(b.date).localeCompare(String(a.date)) ||
@@ -331,7 +329,6 @@ function createControls() {
       </p>
       <div style="display:flex;flex-wrap:wrap;gap:10px">
         <button type="button" data-finish="segunda">FINALIZAR SEGUNDA-FEIRA</button>
-        <button type="button" data-finish="terca">FINALIZAR TERÇA-FEIRA</button>
         <button type="button" data-finish="quarta">FINALIZAR QUARTA-FEIRA</button>
         <button type="button" data-finish="semana">FINALIZAR SEMANA</button>
       </div>
@@ -360,7 +357,6 @@ function renderTabs() {
     dayBox.innerHTML = [
       ['geral', 'TODOS OS DIAS'],
       ['segunda', 'SEGUNDA-FEIRA'],
-      ['terca', 'TERÇA-FEIRA'],
       ['quarta', 'QUARTA-FEIRA']
     ].map(([id, label]) => `
       <button type="button" data-day="${id}"
@@ -467,10 +463,10 @@ function renderRanking() {
 
   if (selectedMode === 'geral') {
     const allMatches = [...currentMatches(), ...archiveMatches()]
-      .filter(match => selectedDay === 'geral' || match.day === selectedDay);
+      .filter(match => match.day !== 'terca' && (selectedDay === 'geral' || match.day === selectedDay));
 
     if (selectedDay === 'geral') {
-      target.innerHTML = ['segunda', 'terca', 'quarta', ...(allMatches.some(m => m.day === 'sexta') ? ['sexta'] : [])].map(day => `
+      target.innerHTML = ['segunda', 'quarta', ...(allMatches.some(m => m.day === 'sexta') ? ['sexta'] : [])].map(day => `
         <section style="margin:18px 0 28px">
           <h3 style="color:${COLORS.bright}">${esc(days[day] || legacyDays[day])}</h3>
           ${rankingTable(rankingFor(allMatches.filter(match => match.day === day)))}
@@ -484,7 +480,7 @@ function renderRanking() {
   }
 
   if (selectedDay === 'geral') {
-    const sections = ['segunda', 'terca', 'quarta', ...(items.some(m => m.day === 'sexta') ? ['sexta'] : [])].map(day => {
+    const sections = ['segunda', 'quarta', ...(items.some(m => m.day === 'sexta') ? ['sexta'] : [])].map(day => {
       const rows = rankingFor(items.filter(match => match.day === day));
       return `
         <section style="margin:18px 0 28px">
